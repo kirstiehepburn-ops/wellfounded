@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wellfounded - Your Wellbeing</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #F0F4FA; color: #1B3A6B; font-size: 13px; }
+
+/* LAYOUT */
+.layout { display: flex; height: 100vh; overflow: hidden; }
+
+/* SIDEBAR */
+.sidebar { width: 220px; background: #1B3A6B; display: flex; flex-direction: column; flex-shrink: 0; }
+.logo-area { padding: 22px 20px 18px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.logo-wordmark { font-size: 15px; font-weight: 700; color: white; letter-spacing: -0.3px; margin-top: 8px; }
+.logo-wordmark span { color: #F0A0BC; }
+.logo-user { font-size: 11px; color: rgba(255,255,255,0.45); margin-top: 3px; }
+nav { padding: 14px 0; flex: 1; }
+.nav-section { font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,255,255,0.3); padding: 12px 20px 6px; }
+.nav-item { padding: 9px 20px; font-size: 12px; color: rgba(255,255,255,0.6); cursor: pointer; display: flex; align-items: center; gap: 10px; border-left: 3px solid transparent; transition: all 0.15s; user-select: none; }
+.nav-item.active { color: white; background: rgba(255,255,255,0.09); border-left-color: #E8799A; }
+.nav-item:hover:not(.active) { color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.04); }
+.nav-icon { font-size: 13px; width: 16px; text-align: center; flex-shrink: 0; }
+.nav-badge { margin-left: auto; background: #E8799A; color: white; font-size: 9px; font-weight: 700; border-radius: 10px; padding: 2px 6px; }
+.sidebar-paul { margin: 0 16px 16px; background: rgba(255,255,255,0.07); border-radius: 10px; padding: 12px; }
+.paul-label { font-size: 9px; color: rgba(255,255,255,0.4); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+.paul-quote { font-size: 11px; color: rgba(255,255,255,0.75); line-height: 1.5; font-style: italic; }
+.paul-name { font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 6px; }
+
+/* MAIN */
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.topbar { background: white; border-bottom: 1px solid #e2e8f0; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+.topbar-label { font-size: 10px; color: #94a3b8; letter-spacing: 1.5px; text-transform: uppercase; }
+.topbar-title { font-size: 17px; font-weight: 700; color: #1B3A6B; margin-top: 2px; }
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+.avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #1B3A6B, #2563EB); color: white; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+.content { flex: 1; overflow-y: auto; padding: 24px 28px; }
+
+/* PAGES */
+.page { display: none; }
+.page.active { display: block; }
+
+/* CARDS */
+.card { background: white; border-radius: 14px; padding: 22px; }
+.card-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8; margin-bottom: 16px; }
+
+/* GRID HELPERS */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+.three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+.four-col { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 16px; }
+
+/* HERO WELCOME */
+.welcome-hero { background: linear-gradient(135deg, #1B3A6B 0%, #2563EB 100%); border-radius: 14px; padding: 28px 32px; color: white; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.welcome-text h2 { font-size: 22px; font-weight: 800; margin-bottom: 8px; }
+.welcome-text p { font-size: 13px; color: rgba(255,255,255,0.75); line-height: 1.6; max-width: 480px; }
+.welcome-cta { flex-shrink: 0; text-align: center; }
+.cta-btn { background: #E8799A; color: white; border: none; border-radius: 10px; padding: 14px 24px; font-size: 14px; font-weight: 700; cursor: pointer; display: block; width: 100%; }
+.cta-btn:hover { background: #d4637f; }
+.cta-note { font-size: 10px; color: rgba(255,255,255,0.5); margin-top: 8px; }
+
+/* PAST SCORE CARDS */
+.past-card { background: white; border-radius: 14px; padding: 20px; border-top: 4px solid #e2e8f0; }
+.past-card.P { border-top-color: #2563EB; }
+.past-card.A { border-top-color: #E8799A; }
+.past-card.S { border-top-color: #1B3A6B; }
+.past-card.T { border-top-color: #6366f1; }
+.past-dim { font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #94a3b8; margin-bottom: 4px; }
+.past-name { font-size: 13px; font-weight: 700; color: #1B3A6B; margin-bottom: 2px; }
+.past-desc { font-size: 11px; color: #94a3b8; margin-bottom: 12px; line-height: 1.4; }
+.past-score-big { font-size: 40px; font-weight: 800; line-height: 1; }
+.past-score-big.P { color: #2563EB; }
+.past-score-big.A { color: #E8799A; }
+.past-score-big.S { color: #1B3A6B; }
+.past-score-big.T { color: #6366f1; }
+.past-denom { font-size: 16px; color: #94a3b8; }
+.bar-bg { background: #f1f5f9; border-radius: 6px; height: 7px; margin: 12px 0 6px; }
+.bar-fill { height: 7px; border-radius: 6px; }
+.past-compare { font-size: 10px; color: #94a3b8; display: flex; justify-content: space-between; }
+.past-trend { font-size: 11px; margin-top: 8px; font-weight: 600; }
+.up { color: #10b981; }
+.dn { color: #ef4444; }
+.nt { color: #94a3b8; }
+
+/* SURVEY FLOW */
+.survey-progress { background: white; border-radius: 14px; padding: 20px 24px; margin-bottom: 16px; }
+.progress-bar-bg { background: #f1f5f9; border-radius: 10px; height: 8px; margin: 10px 0 6px; }
+.progress-bar-fill { background: linear-gradient(90deg, #1B3A6B, #E8799A); border-radius: 10px; height: 8px; transition: width 0.4s ease; }
+.progress-meta { display: flex; justify-content: space-between; font-size: 11px; color: #94a3b8; }
+
+.question-card { background: white; border-radius: 14px; padding: 32px; margin-bottom: 16px; }
+.q-dimension { display: inline-flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; border-radius: 20px; padding: 4px 12px; margin-bottom: 16px; }
+.q-dimension.P { background: #dbeafe; color: #1e40af; }
+.q-dimension.A { background: #FDF0F5; color: #9B2551; }
+.q-dimension.S { background: #EEF3FB; color: #1B3A6B; }
+.q-dimension.T { background: #ede9fe; color: #5b21b6; }
+.q-text { font-size: 18px; font-weight: 700; color: #1B3A6B; line-height: 1.4; margin-bottom: 28px; }
+.q-subtext { font-size: 12px; color: #94a3b8; margin-top: -20px; margin-bottom: 28px; line-height: 1.5; }
+.rating-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.rating-btn { width: 52px; height: 52px; border-radius: 12px; border: 2px solid #e2e8f0; background: white; font-size: 16px; font-weight: 700; color: #94a3b8; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; }
+.rating-btn:hover { border-color: #1B3A6B; color: #1B3A6B; background: #EEF3FB; transform: translateY(-2px); }
+.rating-btn.selected { border-color: #1B3A6B; background: #1B3A6B; color: white; transform: translateY(-2px); }
+.rating-btn.selected.P { border-color: #2563EB; background: #2563EB; }
+.rating-btn.selected.A { border-color: #E8799A; background: #E8799A; }
+.rating-btn.selected.S { border-color: #1B3A6B; background: #1B3A6B; }
+.rating-btn.selected.T { border-color: #6366f1; background: #6366f1; }
+.rating-labels { display: flex; justify-content: space-between; margin-top: 10px; font-size: 10px; color: #94a3b8; padding: 0 4px; }
+.q-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 24px; }
+.btn-back { background: white; color: #1B3A6B; border: 1px solid #c5d5eb; border-radius: 8px; padding: 10px 20px; font-size: 12px; font-weight: 600; cursor: pointer; }
+.btn-next { background: #1B3A6B; color: white; border: none; border-radius: 8px; padding: 10px 24px; font-size: 12px; font-weight: 600; cursor: pointer; opacity: 0.4; pointer-events: none; }
+.btn-next.enabled { opacity: 1; pointer-events: auto; }
+.btn-next.enabled:hover { background: #14305a; }
+.btn-next.pink { background: #E8799A; }
+.btn-next.pink:hover { background: #d4637f; }
+
+/* COMPLETE SCREEN */
+.complete-screen { text-align: center; padding: 40px 20px; }
+.complete-icon { font-size: 56px; margin-bottom: 20px; }
+.complete-title { font-size: 26px; font-weight: 800; color: #1B3A6B; margin-bottom: 10px; }
+.complete-sub { font-size: 14px; color: #64748b; line-height: 1.6; margin-bottom: 28px; max-width: 440px; margin-left: auto; margin-right: auto; }
+.complete-scores { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; max-width: 500px; margin: 0 auto 28px; }
+.complete-score-card { background: white; border-radius: 12px; padding: 16px; }
+.complete-score-val { font-size: 28px; font-weight: 800; }
+.complete-score-dim { font-size: 10px; color: #94a3b8; margin-top: 4px; }
+
+/* RESULTS */
+.score-ring-container { display: flex; align-items: center; gap: 28px; margin-bottom: 16px; }
+.ring-wrap { position: relative; width: 120px; height: 120px; flex-shrink: 0; }
+.ring-wrap svg { transform: rotate(-90deg); }
+.ring-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+.ring-num { font-size: 28px; font-weight: 800; color: #1B3A6B; line-height: 1; }
+.ring-label { font-size: 9px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+.ring-meta { flex: 1; }
+.ring-meta h3 { font-size: 16px; font-weight: 700; color: #1B3A6B; margin-bottom: 6px; }
+.ring-meta p { font-size: 12px; color: #64748b; line-height: 1.6; }
+
+/* COMPARE BAR */
+.compare-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.compare-label { width: 60px; font-size: 11px; color: #64748b; flex-shrink: 0; font-weight: 500; }
+.compare-bar-wrap { flex: 1; height: 10px; background: #f1f5f9; border-radius: 5px; position: relative; }
+.compare-bar-team { position: absolute; top: 0; left: 0; height: 10px; border-radius: 5px; background: #EEF3FB; }
+.compare-bar-you { position: absolute; top: 0; left: 0; height: 10px; border-radius: 5px; }
+.compare-score { width: 28px; font-size: 12px; font-weight: 700; text-align: right; }
+
+/* RECS */
+.rec-card { background: white; border-radius: 14px; padding: 20px; margin-bottom: 12px; border-left: 4px solid #e2e8f0; transition: all 0.2s; }
+.rec-card.P { border-left-color: #2563EB; }
+.rec-card.A { border-left-color: #E8799A; }
+.rec-card.S { border-left-color: #1B3A6B; }
+.rec-card.T { border-left-color: #6366f1; }
+.rec-card.done { background: #f8fafc; }
+.rec-top { display: flex; gap: 14px; align-items: flex-start; }
+.rec-icon { font-size: 22px; flex-shrink: 0; }
+.rec-body { flex: 1; }
+.rec-body h4 { font-size: 13px; font-weight: 700; color: #1B3A6B; margin-bottom: 4px; }
+.rec-body p { font-size: 12px; color: #64748b; line-height: 1.5; }
+.rec-tag { display: inline-block; margin-top: 8px; font-size: 10px; border-radius: 10px; padding: 2px 8px; background: #f1f5f9; color: #64748b; }
+.rec-done-btn { margin-top: 12px; display: flex; align-items: center; gap: 8px; background: #EEF3FB; border: 1.5px solid #c5d5eb; border-radius: 8px; padding: 7px 12px; font-size: 11px; font-weight: 700; color: #1B3A6B; cursor: pointer; transition: all 0.15s; }
+.rec-done-btn:hover { background: #1B3A6B; color: white; border-color: #1B3A6B; }
+.rec-done-btn.done { background: #d1fae5; border-color: #10b981; color: #065f46; pointer-events: none; }
+.rec-check { width: 16px; height: 16px; border-radius: 50%; border: 2px solid currentColor; display: flex; align-items: center; justify-content: center; font-size: 9px; flex-shrink: 0; }
+.rec-followup { margin-top: 14px; border-top: 1px solid #f1f5f9; padding-top: 14px; display: none; animation: fadeIn 0.3s ease; }
+.rec-followup.visible { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+.followup-q { font-size: 12px; font-weight: 700; color: #1B3A6B; margin-bottom: 8px; }
+.followup-sub { font-size: 11px; color: #94a3b8; margin-bottom: 10px; }
+.followup-opts { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+.f-btn { font-size: 11px; font-weight: 600; border-radius: 8px; padding: 6px 12px; cursor: pointer; border: 1.5px solid #e2e8f0; background: white; color: #334155; transition: all 0.15s; }
+.f-btn:hover { border-color: #1B3A6B; background: #EEF3FB; color: #1B3A6B; }
+.f-btn.sel-yes { background: #d1fae5; border-color: #10b981; color: #065f46; }
+.f-btn.sel-no { background: #fee2e2; border-color: #ef4444; color: #991b1b; }
+.f-btn.sel-some { background: #EEF3FB; border-color: #2563EB; color: #1B3A6B; }
+.followup-again { font-size: 12px; font-weight: 700; color: #1B3A6B; margin: 10px 0 8px; }
+.followup-thanks { font-size: 11px; color: #10b981; font-weight: 600; margin-top: 8px; display: none; }
+.followup-thanks.visible { display: block; }
+
+/* RESOURCES */
+.resource-card { background: white; border-radius: 14px; padding: 18px; display: flex; gap: 14px; align-items: flex-start; margin-bottom: 12px; cursor: pointer; transition: box-shadow 0.15s; }
+.resource-card:hover { box-shadow: 0 4px 16px rgba(27,58,107,0.1); }
+.resource-thumb { width: 56px; height: 56px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; }
+.resource-body { flex: 1; }
+.resource-type { font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #94a3b8; margin-bottom: 4px; }
+.resource-title { font-size: 13px; font-weight: 700; color: #1B3A6B; margin-bottom: 4px; line-height: 1.4; }
+.resource-desc { font-size: 11px; color: #64748b; line-height: 1.5; }
+.resource-meta { font-size: 10px; color: #94a3b8; margin-top: 6px; }
+.resource-arrow { color: #94a3b8; font-size: 16px; flex-shrink: 0; align-self: center; }
+
+/* PILL */
+.pill { display: inline-block; border-radius: 20px; padding: 3px 10px; font-size: 10px; font-weight: 600; }
+.pill.green { background: #d1fae5; color: #065f46; }
+.pill.amber { background: #fef3c7; color: #92400e; }
+
+/* DIVIDER */
+.divider { height: 1px; background: #f1f5f9; margin: 16px 0; }
+
+/* UPSELL */
+.upsell-card { background: linear-gradient(135deg, #1B3A6B 0%, #2563EB 100%); border-radius: 14px; padding: 24px; color: white; margin-bottom: 16px; }
+.upsell-title { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+.upsell-body { font-size: 12px; color: rgba(255,255,255,0.75); line-height: 1.6; margin-bottom: 14px; }
+.upsell-btn { background: #E8799A; color: white; border: none; border-radius: 8px; padding: 10px 18px; font-size: 12px; font-weight: 700; cursor: pointer; }
+
+/* HISTORY */
+.history-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f8fafc; }
+.history-year { font-size: 12px; font-weight: 700; color: #1B3A6B; width: 40px; flex-shrink: 0; }
+.history-bars { flex: 1; display: flex; gap: 4px; align-items: flex-end; height: 32px; }
+.history-bar { border-radius: 2px 2px 0 0; flex: 1; }
+.history-score { font-size: 13px; font-weight: 800; width: 28px; text-align: right; flex-shrink: 0; }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="logo-area">
+      <svg width="52" height="17" viewBox="0 819.5 69 23" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <clipPath id="sg" clipPathUnits="userSpaceOnUse">
+            <path fill-rule="evenodd" transform="matrix(.1,0,0,-.1,0,842)"
+              d="M646.547 98.4414C643.547 38.0781 623.801 19.2539 561.828 17.9023 552.719 17.7109 543.598 17.9023 534.535 17.9023 433.449 17.7578 414.105 33.1094 394.055 129.27 386.703 164.426 394.34 180.371 429.953 190.047 473.539 203.105 519.477 206.277 564.438 199.348 645.668 185.207 650.551 181.391 646.555 98.4414H646.547Z
+              M295.336 129.27C275.336 33.1094 255.953 17.7578 154.855 17.9023 145.785 17.9023 136.68 17.7109 127.566 17.9023 65.5664 19.2539 45.7734 38.0781 42.8438 98.4414 38.8477 181.438 43.7305 185.207 124.969 199.348 169.91 206.277 215.832 203.105 259.398 190.047 295.059 180.371 302.688 164.418 295.336 129.27Z
+              M668.832 199.109C652.98 203.23 636.898 206.32 620.656 208.367 546.984 220.477 471.645 217.855 398.988 200.648 363.031 194.816 326.363 194.816 290.406 200.648 217.742 217.855 142.387 220.477 68.6953 208.367 52.4688 206.316 36.3945 203.227 20.5664 199.109 3.77734 194.23-6.26172 177.352 4.38672 165.539 31.8164 135.227 22.8984 96.6797 33.4961 62.9258 39.5547 39.7227 56.3867 20.8516 78.7383 12.1914 132.445-8.60156 186.527 .00390625 239.156 17.1211 279.797 30.3242 295.047 66.5469 309.156 102.727 311.348 107.738 313.91 112.57 316.824 117.191 325.477 131.934 334.828 139.559 344.637 140.109 354.496 139.551 363.852 131.934 372.484 117.191 375.402 112.57 377.973 107.738 380.16 102.727 394.301 66.5469 409.543 30.3242 450.16 17.1211 502.797 .015625 556.879-8.60156 610.578 12.1914 632.934 20.8516 649.758 39.7227 655.813 62.9258 666.379 96.6797 657.484 135.227 684.926 165.539 695.656 177.352 685.617 194.23 668.832 199.109Z"/>
+          </clipPath>
+        </defs>
+        <rect x="0" y="819" width="35" height="24" fill="white" clip-path="url(#sg)"/>
+        <rect x="34" y="819" width="36" height="24" fill="#F0A0BC" clip-path="url(#sg)"/>
+      </svg>
+      <div class="logo-wordmark">well<span>founded</span></div>
+      <div class="logo-user">Sarah Mitchell · Technology</div>
+    </div>
+    <nav>
+      <div class="nav-section">My wellbeing</div>
+      <div class="nav-item active" onclick="navigate('home')"><span class="nav-icon">🏠</span> Home</div>
+      <div class="nav-item" onclick="navigate('survey')"><span class="nav-icon">◎</span> Take assessment <span class="nav-badge">New</span></div>
+      <div class="nav-item" onclick="navigate('results')"><span class="nav-icon">◈</span> My scores</div>
+      <div class="nav-section">Growth</div>
+      <div class="nav-item" onclick="navigate('recommendations')"><span class="nav-icon">✦</span> Recommendations</div>
+      <div class="nav-item" onclick="navigate('resources')"><span class="nav-icon">📖</span> Resources</div>
+      <div class="nav-item" onclick="navigate('history')"><span class="nav-icon">◷</span> My history</div>
+    </nav>
+    <div class="sidebar-paul">
+      <div class="paul-label">From Paul Dolan</div>
+      <div class="paul-quote">"Happiness is about what you do and who you're with - not what you think."</div>
+      <div class="paul-name">- Professor Paul Dolan, LSE</div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <div class="topbar-label" id="topbar-label">Your wellbeing</div>
+        <div class="topbar-title" id="topbar-title">Welcome back, Sarah</div>
+      </div>
+      <div class="topbar-right">
+        <div id="topbar-right"></div>
+        <div class="avatar">SM</div>
+      </div>
+    </div>
+    <div class="content" id="content">
+
+      <!-- HOME PAGE -->
+      <div class="page active" id="page-home">
+        <div class="welcome-hero">
+          <div class="welcome-text">
+            <h2>Your 2026 assessment is ready 👓</h2>
+            <p>This year's diagnostic takes around 8 minutes. Your answers are confidential - only anonymised, aggregated data is shared with Vantara Group. Your personal scores are yours alone.</p>
+          </div>
+          <div class="welcome-cta">
+            <button class="cta-btn" onclick="navigate('survey')">Start assessment →</button>
+            <div class="cta-note">~8 minutes · 42 questions</div>
+          </div>
+        </div>
+
+        <div class="four-col">
+          <div class="past-card P">
+            <div class="past-dim">P · Pleasure</div>
+            <div class="past-score-big P">69<span class="past-denom">/100</span></div>
+            <div class="bar-bg"><div class="bar-fill" style="width:69%;background:#2563EB;"></div></div>
+            <div class="past-trend up">↑ +5 from last year</div>
+          </div>
+          <div class="past-card A">
+            <div class="past-dim">A · Achievement</div>
+            <div class="past-score-big A">76<span class="past-denom">/100</span></div>
+            <div class="bar-bg"><div class="bar-fill" style="width:76%;background:#E8799A;"></div></div>
+            <div class="past-trend up">↑ +3 from last year</div>
+          </div>
+          <div class="past-card S">
+            <div class="past-dim">S · Significance</div>
+            <div class="past-score-big S">54<span class="past-denom">/100</span></div>
+            <div class="bar-bg"><div class="bar-fill" style="width:54%;background:#1B3A6B;"></div></div>
+            <div class="past-trend dn">↓ −6 from last year ⚠</div>
+          </div>
+          <div class="past-card T">
+            <div class="past-dim">T · Togetherness</div>
+            <div class="past-score-big T">71<span class="past-denom">/100</span></div>
+            <div class="bar-bg"><div class="bar-fill" style="width:71%;background:#6366f1;"></div></div>
+            <div class="past-trend nt">→ Unchanged</div>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div class="card">
+            <div class="card-title">How you compare - Technology team</div>
+            <div class="compare-row">
+              <div class="compare-label">Pleasure</div>
+              <div class="compare-bar-wrap">
+                <div class="compare-bar-team" style="width:70%;"></div>
+                <div class="compare-bar-you" style="width:69%;background:#2563EB;opacity:0.8;"></div>
+              </div>
+              <div class="compare-score" style="color:#2563EB;">69</div>
+            </div>
+            <div class="compare-row">
+              <div class="compare-label">Achievement</div>
+              <div class="compare-bar-wrap">
+                <div class="compare-bar-team" style="width:74%;"></div>
+                <div class="compare-bar-you" style="width:76%;background:#E8799A;opacity:0.8;"></div>
+              </div>
+              <div class="compare-score" style="color:#E8799A;">76</div>
+            </div>
+            <div class="compare-row">
+              <div class="compare-label">Significance</div>
+              <div class="compare-bar-wrap">
+                <div class="compare-bar-team" style="width:62%;"></div>
+                <div class="compare-bar-you" style="width:54%;background:#ef4444;opacity:0.8;"></div>
+              </div>
+              <div class="compare-score" style="color:#ef4444;">54</div>
+            </div>
+            <div class="compare-row">
+              <div class="compare-label">Togetherness</div>
+              <div class="compare-bar-wrap">
+                <div class="compare-bar-team" style="width:66%;"></div>
+                <div class="compare-bar-you" style="width:71%;background:#6366f1;opacity:0.8;"></div>
+              </div>
+              <div class="compare-score" style="color:#6366f1;">71</div>
+            </div>
+            <div style="display:flex;gap:14px;margin-top:12px;">
+              <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:#94a3b8;"><div style="width:10px;height:6px;border-radius:2px;background:#EEF3FB;border:1px solid #c5d5eb;"></div>Team avg</div>
+              <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:#94a3b8;"><div style="width:10px;height:6px;border-radius:2px;background:#1B3A6B;"></div>You</div>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <div class="rec-card S" style="cursor:pointer;" onclick="navigate('recommendations')">
+              <div class="rec-icon">🎯</div>
+              <div class="rec-body">
+                <h4>Your Significance score needs attention</h4>
+                <p>Down 6 points from 2025. We have 3 personalised recommendations to help.</p>
+                <span class="rec-tag">View recommendations →</span>
+              </div>
+            </div>
+            <div class="rec-card A" style="cursor:pointer;" onclick="navigate('resources')">
+              <div class="rec-icon">📖</div>
+              <div class="rec-body">
+                <h4>New from Paul: Attention and flow at work</h4>
+                <p>A short read on how directing your attention changes how your day feels.</p>
+                <span class="rec-tag">7 min read →</span>
+              </div>
+            </div>
+            <div class="upsell-card" style="margin-bottom:0;">
+              <div class="upsell-title">👓 Talk to Paul's team</div>
+              <div class="upsell-body">If your scores are affecting you at work, you can request a confidential conversation with a wellbeing specialist from Professor Dolan's team.</div>
+              <button class="upsell-btn" onclick="alert('Request submitted confidentially')">Request a conversation</button>
+            </div>
+          </div>
+        </div>
+      </div><!-- /home -->
+
+      <!-- SURVEY PAGE -->
+      <div class="page" id="page-survey">
+        <div class="survey-progress">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <div style="font-size:13px;font-weight:700;color:#1B3A6B;" id="survey-dim-label">Pleasure - Day-to-day experience</div>
+            <div style="font-size:11px;color:#94a3b8;" id="survey-counter">Question 1 of 12</div>
+          </div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill" id="survey-progress" style="width:8%;"></div></div>
+          <div class="progress-meta">
+            <span id="survey-section-dots">●○○○</span>
+            <span id="survey-time-left">~8 min remaining</span>
+          </div>
+        </div>
+
+        <div class="question-card" id="question-card">
+          <div class="q-dimension P" id="q-dim-badge">P · Pleasure</div>
+          <div class="q-text" id="q-text">I find genuine enjoyment in the day-to-day activities of my role.</div>
+          <div class="q-subtext" id="q-subtext">Think about a typical week at work - not your best or worst day.</div>
+          <div class="rating-row" id="rating-row">
+            <button class="rating-btn" onclick="selectRating(this, 1)">1</button>
+            <button class="rating-btn" onclick="selectRating(this, 2)">2</button>
+            <button class="rating-btn" onclick="selectRating(this, 3)">3</button>
+            <button class="rating-btn" onclick="selectRating(this, 4)">4</button>
+            <button class="rating-btn" onclick="selectRating(this, 5)">5</button>
+            <button class="rating-btn" onclick="selectRating(this, 6)">6</button>
+            <button class="rating-btn" onclick="selectRating(this, 7)">7</button>
+            <button class="rating-btn" onclick="selectRating(this, 8)">8</button>
+            <button class="rating-btn" onclick="selectRating(this, 9)">9</button>
+            <button class="rating-btn" onclick="selectRating(this, 10)">10</button>
+          </div>
+          <div class="rating-labels"><span>Not at all</span><span>Completely</span></div>
+          <div class="q-nav">
+            <button class="btn-back" id="btn-back" onclick="prevQuestion()" style="visibility:hidden;">← Back</button>
+            <button class="btn-next" id="btn-next" onclick="nextQuestion()">Next →</button>
+          </div>
+        </div>
+      </div><!-- /survey -->
+
+      <!-- RESULTS PAGE -->
+      <div class="page" id="page-results">
+        <div class="card" style="margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:28px;">
+            <div style="flex-shrink:0;">
+              <svg width="120" height="120" viewBox="0 0 120 120">
+                <circle cx="60" cy="60" r="50" fill="none" stroke="#f1f5f9" stroke-width="10"/>
+                <circle cx="60" cy="60" r="50" fill="none" stroke="#1B3A6B" stroke-width="10"
+                  stroke-dasharray="314" stroke-dashoffset="101" stroke-linecap="round" transform="rotate(-90 60 60)"/>
+              </svg>
+              <div style="position:relative;margin-top:-80px;text-align:center;">
+                <div style="font-size:28px;font-weight:800;color:#1B3A6B;">68</div>
+                <div style="font-size:9px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;">Overall</div>
+              </div>
+              <div style="margin-top:56px;"></div>
+            </div>
+            <div>
+              <div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;">Your 2025 results</div>
+              <div style="font-size:20px;font-weight:800;color:#1B3A6B;margin-bottom:8px;">Solid foundations, one clear focus</div>
+              <div style="font-size:12px;color:#64748b;line-height:1.6;max-width:480px;">Your Achievement and Togetherness scores are strong. The key opportunity is Significance - your sense of meaning and purpose at work has dipped noticeably this year. This is common but addressable, and the recommendations below are tailored to your pattern.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="four-col">
+          <div class="past-card P">
+            <div class="past-dim">P · Pleasure</div>
+            <div class="past-name">Day-to-day experience</div>
+            <div class="past-desc">How much you enjoy the moment-to-moment reality of your work</div>
+            <div class="past-score-big P">69<span class="past-denom">/100</span></div>
+            <div class="bar-bg"><div class="bar-fill" style="width:69%;background:#2563EB;"></div></div>
+            <div class="past-compare"><span>You: 69</span><span>Team: 70</span></div>
+            <div class="past-trend up">↑ +5 from 2025</div>
+          </div>
+          <div class="past-card A">
+            <div class="past-dim">A · Achievement</div>
+            <div class="past-name">Sense of progress</div>
+            <div class="past-desc">Feeling of growth, accomplishment and forward momentum</div>
+            <div class="past-score-big A">76<span class="past-denom">/100</span></div>
+            <div class="bar-bg"><div class="bar-fill" style="width:76%;background:#E8799A;"></div></div>
+            <div class="past-compare"><span>You: 76</span><span>Team: 74</span></div>
+            <div class="past-trend up">↑ +3 from 2025</div>
+          </div>
+          <div class="past-card S">
+            <div class="past-dim">S · Significance</div>
+            <div class="past-name">Meaning &amp; purpose</div>
+            <div class="past-desc">Feeling that your work matters and connects to something larger</div>
+            <div class="past-score-big S">54<span class="past-denom">/100</span></div>
+            <div class="bar-bg"><div class="bar-fill" style="width:54%;background:#ef4444;"></div></div>
+            <div class="past-compare"><span style="color:#ef4444;">You: 54 ⚠</span><span>Team: 62</span></div>
+            <div class="past-trend dn">↓ −6 from 2025</div>
+          </div>
+          <div class="past-card T">
+            <div class="past-dim">T · Togetherness</div>
+            <div class="past-name">Connection &amp; belonging</div>
+            <div class="past-desc">Quality of relationships with colleagues and sense of community</div>
+            <div class="past-score-big T">71<span class="past-denom">/100</span></div>
+            <div class="bar-bg"><div class="bar-fill" style="width:71%;background:#6366f1;"></div></div>
+            <div class="past-compare"><span>You: 71</span><span>Team: 66</span></div>
+            <div class="past-trend nt">→ Unchanged</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Lowest scoring questions</div>
+          <div style="border-bottom:1px solid #f8fafc;padding:12px 0;display:flex;align-items:center;gap:12px;">
+            <div style="width:28px;height:28px;border-radius:50%;background:#fee2e2;color:#ef4444;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">4.1</div>
+            <div style="flex:1;font-size:12px;color:#334155;">I feel my work makes a meaningful difference to others</div>
+            <span style="font-size:9px;background:#EEF3FB;color:#1B3A6B;border-radius:10px;padding:2px 8px;font-weight:700;">Significance</span>
+          </div>
+          <div style="border-bottom:1px solid #f8fafc;padding:12px 0;display:flex;align-items:center;gap:12px;">
+            <div style="width:28px;height:28px;border-radius:50%;background:#fee2e2;color:#ef4444;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">4.8</div>
+            <div style="flex:1;font-size:12px;color:#334155;">I understand how my role contributes to the organisation's bigger goals</div>
+            <span style="font-size:9px;background:#EEF3FB;color:#1B3A6B;border-radius:10px;padding:2px 8px;font-weight:700;">Significance</span>
+          </div>
+          <div style="padding:12px 0;display:flex;align-items:center;gap:12px;">
+            <div style="width:28px;height:28px;border-radius:50%;background:#fef3c7;color:#92400e;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">5.2</div>
+            <div style="flex:1;font-size:12px;color:#334155;">I can focus on one task at a time without frequent interruption</div>
+            <span style="font-size:9px;background:#dbeafe;color:#1e40af;border-radius:10px;padding:2px 8px;font-weight:700;">Pleasure</span>
+          </div>
+        </div>
+      </div><!-- /results -->
+
+      <!-- RECOMMENDATIONS PAGE -->
+      <div class="page" id="page-recommendations">
+        <div class="card" style="margin-bottom:16px;background:#1B3A6B;color:white;">
+          <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:8px;">Personalised for you</div>
+          <div style="font-size:16px;font-weight:700;margin-bottom:6px;">Based on your Significance score of 54</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.7);line-height:1.6;">Your sense of meaning at work has dipped this year. The following recommendations are drawn directly from Paul Dolan's research. Mark each one as done when you try it - we'll ask how it went.</div>
+        </div>
+
+        <!-- REC 1 -->
+        <div class="rec-card S" id="rec-1">
+          <div class="rec-top">
+            <div class="rec-icon">🔭</div>
+            <div class="rec-body">
+              <h4>Map your impact</h4>
+              <p>Take 20 minutes this week to write down three ways your work directly helps a real person - a colleague, a client, or an end user. Paul's research shows that making impact concrete and specific - not abstract - is what shifts the feeling of significance.</p>
+              <span class="rec-tag">Significance</span> <span class="rec-tag">20 min exercise</span>
+            </div>
+          </div>
+          <button class="rec-done-btn" id="rec-1-btn" onclick="markDone(1)">
+            <span class="rec-check">○</span> Mark as done
+          </button>
+          <div class="rec-followup" id="rec-1-followup">
+            <div class="followup-q">Did mapping your impact make a difference to how your work felt?</div>
+            <div class="followup-opts">
+              <button class="f-btn" onclick="followupAnswer(1,'diff','yes',this)">Yes, noticeably</button>
+              <button class="f-btn" onclick="followupAnswer(1,'diff','some',this)">A little</button>
+              <button class="f-btn" onclick="followupAnswer(1,'diff','no',this)">Not really</button>
+            </div>
+            <div class="followup-again" id="rec-1-again" style="display:none;">Would you do it again?</div>
+            <div class="followup-opts" id="rec-1-again-opts" style="display:none;">
+              <button class="f-btn" onclick="followupAnswer(1,'again','yes',this)">Yes, regularly</button>
+              <button class="f-btn" onclick="followupAnswer(1,'again','some',this)">Maybe occasionally</button>
+              <button class="f-btn" onclick="followupAnswer(1,'again','no',this)">Probably not</button>
+            </div>
+            <div class="followup-thanks" id="rec-1-thanks">Thanks Sarah - this helps us refine your recommendations. 🙏</div>
+          </div>
+        </div>
+
+        <!-- REC 2 -->
+        <div class="rec-card S" id="rec-2">
+          <div class="rec-top">
+            <div class="rec-icon">💬</div>
+            <div class="rec-body">
+              <h4>Have a "purpose conversation" with your manager</h4>
+              <p>Ask your manager to help you connect your current projects to team or org goals. Studies show that employees who can articulate the link between their tasks and broader outcomes score 18 points higher on Significance within one quarter.</p>
+              <span class="rec-tag">Significance</span> <span class="rec-tag">Team action</span>
+            </div>
+          </div>
+          <button class="rec-done-btn" id="rec-2-btn" onclick="markDone(2)">
+            <span class="rec-check">○</span> Mark as done
+          </button>
+          <div class="rec-followup" id="rec-2-followup">
+            <div class="followup-q">How did the conversation go - did it shift how your work feels?</div>
+            <div class="followup-opts">
+              <button class="f-btn" onclick="followupAnswer(2,'diff','yes',this)">Yes, really helped</button>
+              <button class="f-btn" onclick="followupAnswer(2,'diff','some',this)">Somewhat</button>
+              <button class="f-btn" onclick="followupAnswer(2,'diff','no',this)">Not yet</button>
+            </div>
+            <div class="followup-again" id="rec-2-again" style="display:none;">Would you recommend this to a colleague?</div>
+            <div class="followup-opts" id="rec-2-again-opts" style="display:none;">
+              <button class="f-btn" onclick="followupAnswer(2,'again','yes',this)">Definitely</button>
+              <button class="f-btn" onclick="followupAnswer(2,'again','some',this)">Maybe</button>
+              <button class="f-btn" onclick="followupAnswer(2,'again','no',this)">Probably not</button>
+            </div>
+            <div class="followup-thanks" id="rec-2-thanks">Thanks - that's useful. We'll factor this into your next recommendations. 🙏</div>
+          </div>
+        </div>
+
+        <!-- REC 3 -->
+        <div class="rec-card P" id="rec-3">
+          <div class="rec-top">
+            <div class="rec-icon">📵</div>
+            <div class="rec-body">
+              <h4>Protect one focus block per day</h4>
+              <p>Your Pleasure score is being held back by fragmented attention - one of the most common day-to-day wellbeing killers in office environments. Block 90 minutes daily with no Slack, no email, no meetings. Even two weeks of this significantly improves your experience of work.</p>
+              <span class="rec-tag">Pleasure</span> <span class="rec-tag">Daily habit</span>
+            </div>
+          </div>
+          <button class="rec-done-btn" id="rec-3-btn" onclick="markDone(3)">
+            <span class="rec-check">○</span> Mark as done
+          </button>
+          <div class="rec-followup" id="rec-3-followup">
+            <div class="followup-q">Did protecting a focus block change how your day felt?</div>
+            <div class="followup-opts">
+              <button class="f-btn" onclick="followupAnswer(3,'diff','yes',this)">Yes, much better</button>
+              <button class="f-btn" onclick="followupAnswer(3,'diff','some',this)">A bit</button>
+              <button class="f-btn" onclick="followupAnswer(3,'diff','no',this)">Hard to tell</button>
+            </div>
+            <div class="followup-again" id="rec-3-again" style="display:none;">Will you keep the habit going?</div>
+            <div class="followup-opts" id="rec-3-again-opts" style="display:none;">
+              <button class="f-btn" onclick="followupAnswer(3,'again','yes',this)">Yes, every day</button>
+              <button class="f-btn" onclick="followupAnswer(3,'again','some',this)">When I can</button>
+              <button class="f-btn" onclick="followupAnswer(3,'again','no',this)">Too hard to protect</button>
+            </div>
+            <div class="followup-thanks" id="rec-3-thanks">Good to know - we'll track this against your next Pleasure score. 🙏</div>
+          </div>
+        </div>
+
+        <!-- REC 4 -->
+        <div class="rec-card T" id="rec-4">
+          <div class="rec-top">
+            <div class="rec-icon">☕</div>
+            <div class="rec-body">
+              <h4>Invest in one meaningful work relationship</h4>
+              <p>Togetherness scores are strongly predicted by the depth of a few key relationships rather than the breadth of many. Identify one colleague you'd like to know better and make a small, deliberate effort - a coffee, a shared project, a genuine question.</p>
+              <span class="rec-tag">Togetherness</span> <span class="rec-tag">Relationship</span>
+            </div>
+          </div>
+          <button class="rec-done-btn" id="rec-4-btn" onclick="markDone(4)">
+            <span class="rec-check">○</span> Mark as done
+          </button>
+          <div class="rec-followup" id="rec-4-followup">
+            <div class="followup-q">Did making that connection change how you felt at work?</div>
+            <div class="followup-opts">
+              <button class="f-btn" onclick="followupAnswer(4,'diff','yes',this)">Yes, genuinely</button>
+              <button class="f-btn" onclick="followupAnswer(4,'diff','some',this)">Early days</button>
+              <button class="f-btn" onclick="followupAnswer(4,'diff','no',this)">Not really</button>
+            </div>
+            <div class="followup-again" id="rec-4-again" style="display:none;">Would you make another connection deliberately?</div>
+            <div class="followup-opts" id="rec-4-again-opts" style="display:none;">
+              <button class="f-btn" onclick="followupAnswer(4,'again','yes',this)">Yes, already thinking of someone</button>
+              <button class="f-btn" onclick="followupAnswer(4,'again','some',this)">Maybe</button>
+              <button class="f-btn" onclick="followupAnswer(4,'again','no',this)">Probably not</button>
+            </div>
+            <div class="followup-thanks" id="rec-4-thanks">Thank you - small connections add up. We'll revisit this in your next check-in. 🙏</div>
+          </div>
+        </div>
+
+        <div class="upsell-card">
+          <div class="upsell-title">👓 Want to go deeper?</div>
+          <div class="upsell-body">If you'd like to explore your Significance scores in more depth, Professor Dolan's team offers confidential 1:1 sessions. These are separate from anything shared with your employer.</div>
+          <button class="upsell-btn" onclick="alert('Session requested - confidentially')">Request a private session</button>
+        </div>
+      </div><!-- /recommendations -->
+
+      <!-- RESOURCES PAGE -->
+      <div class="page" id="page-resources">
+        <div style="margin-bottom:16px;font-size:12px;color:#64748b;line-height:1.6;background:white;border-radius:12px;padding:16px 20px;">
+          Resources are selected based on your PAST scores. Significance content is highlighted because it's your current priority area.
+        </div>
+
+        <div class="card-title" style="margin-bottom:10px;">📌 Recommended for you</div>
+
+        <div class="resource-card">
+          <div class="resource-thumb" style="background:#EEF3FB;">📖</div>
+          <div class="resource-body">
+            <div class="resource-type">Article · Significance</div>
+            <div class="resource-title">Why "making a difference" needs to be specific, not abstract</div>
+            <div class="resource-desc">Paul Dolan explains why vague mission statements don't move the needle on Significance - and what actually does.</div>
+            <div class="resource-meta">7 min read · Prof. Paul Dolan</div>
+          </div>
+          <div class="resource-arrow">›</div>
+        </div>
+
+        <div class="resource-card">
+          <div class="resource-thumb" style="background:#FDF0F5;">🎧</div>
+          <div class="resource-body">
+            <div class="resource-type">Podcast · Pleasure</div>
+            <div class="resource-title">Attention is everything: how what you notice shapes how you feel</div>
+            <div class="resource-desc">From Paul's Duck/Rabbit series - a practical look at how redirecting attention at work improves day-to-day experience.</div>
+            <div class="resource-meta">24 min · Duck/Rabbit Podcast</div>
+          </div>
+          <div class="resource-arrow">›</div>
+        </div>
+
+        <div class="resource-card">
+          <div class="resource-thumb" style="background:#dbeafe;">📗</div>
+          <div class="resource-body">
+            <div class="resource-type">Book extract · Achievement</div>
+            <div class="resource-title">Happiness by Design - Chapter 4: Designing your environment</div>
+            <div class="resource-desc">How deliberately shaping your environment - desk, calendar, commute - can significantly raise your Achievement scores.</div>
+            <div class="resource-meta">12 min read · Happiness by Design</div>
+          </div>
+          <div class="resource-arrow">›</div>
+        </div>
+
+        <div class="divider"></div>
+        <div class="card-title" style="margin-bottom:10px;">All resources</div>
+
+        <div class="resource-card">
+          <div class="resource-thumb" style="background:#ede9fe;">🎬</div>
+          <div class="resource-body">
+            <div class="resource-type">Video · Togetherness</div>
+            <div class="resource-title">The science of connection at work</div>
+            <div class="resource-desc">Paul's TEDx talk on why deep relationships (not wide networks) predict sustained wellbeing.</div>
+            <div class="resource-meta">18 min · TEDx</div>
+          </div>
+          <div class="resource-arrow">›</div>
+        </div>
+
+        <div class="resource-card">
+          <div class="resource-thumb" style="background:#d1fae5;">✏️</div>
+          <div class="resource-body">
+            <div class="resource-type">Exercise · All dimensions</div>
+            <div class="resource-title">The PAST journal - a 5-minute daily practice</div>
+            <div class="resource-desc">A structured journaling practice that builds awareness of your pleasure, achievement, significance and togetherness moments each day.</div>
+            <div class="resource-meta">5 min daily · Downloadable template</div>
+          </div>
+          <div class="resource-arrow">›</div>
+        </div>
+      </div><!-- /resources -->
+
+      <!-- HISTORY PAGE -->
+      <div class="page" id="page-history">
+        <div class="card" style="margin-bottom:16px;">
+          <div class="card-title">Your score over time</div>
+          <div style="display:flex;gap:10px;align-items:flex-end;height:160px;padding-top:10px;margin-bottom:8px;">
+            <div style="display:flex;flex-direction:column;align-items:center;flex:1;">
+              <div style="display:flex;gap:3px;align-items:flex-end;width:100%;justify-content:center;">
+                <div style="width:16px;background:#2563EB;border-radius:3px 3px 0 0;height:calc(60% * 1.4);"></div>
+                <div style="width:16px;background:#E8799A;border-radius:3px 3px 0 0;height:calc(70% * 1.4);"></div>
+                <div style="width:16px;background:#1B3A6B;border-radius:3px 3px 0 0;height:calc(65% * 1.4);"></div>
+                <div style="width:16px;background:#6366f1;border-radius:3px 3px 0 0;height:calc(68% * 1.4);"></div>
+              </div>
+              <div style="font-size:10px;color:#94a3b8;margin-top:6px;">2024</div>
+              <div style="font-size:11px;font-weight:700;color:#94a3b8;">63</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;flex:1;">
+              <div style="display:flex;gap:3px;align-items:flex-end;width:100%;justify-content:center;">
+                <div style="width:16px;background:#2563EB;border-radius:3px 3px 0 0;height:calc(64% * 1.4);"></div>
+                <div style="width:16px;background:#E8799A;border-radius:3px 3px 0 0;height:calc(73% * 1.4);"></div>
+                <div style="width:16px;background:#1B3A6B;border-radius:3px 3px 0 0;height:calc(60% * 1.4);"></div>
+                <div style="width:16px;background:#6366f1;border-radius:3px 3px 0 0;height:calc(71% * 1.4);"></div>
+              </div>
+              <div style="font-size:10px;color:#94a3b8;margin-top:6px;">2025</div>
+              <div style="font-size:11px;font-weight:700;color:#94a3b8;">66</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;flex:1;">
+              <div style="display:flex;gap:3px;align-items:flex-end;width:100%;justify-content:center;">
+                <div style="width:16px;background:#2563EB;border-radius:3px 3px 0 0;height:calc(69% * 1.4);"></div>
+                <div style="width:16px;background:#E8799A;border-radius:3px 3px 0 0;height:calc(76% * 1.4);"></div>
+                <div style="width:16px;background:#ef4444;border-radius:3px 3px 0 0;height:calc(54% * 1.4);"></div>
+                <div style="width:16px;background:#6366f1;border-radius:3px 3px 0 0;height:calc(71% * 1.4);"></div>
+              </div>
+              <div style="font-size:10px;color:#E8799A;margin-top:6px;font-weight:700;">2026</div>
+              <div style="font-size:11px;font-weight:800;color:#E8799A;">68</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:14px;flex-wrap:wrap;">
+            <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:#64748b;"><div style="width:10px;height:10px;border-radius:2px;background:#2563EB;"></div>Pleasure</div>
+            <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:#64748b;"><div style="width:10px;height:10px;border-radius:2px;background:#E8799A;"></div>Achievement</div>
+            <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:#64748b;"><div style="width:10px;height:10px;border-radius:2px;background:#1B3A6B;"></div>Significance</div>
+            <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:#64748b;"><div style="width:10px;height:10px;border-radius:2px;background:#6366f1;"></div>Togetherness</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Year-by-year breakdown</div>
+          <table style="width:100%;border-collapse:collapse;">
+            <thead><tr>
+              <th style="text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;padding:0 0 10px;border-bottom:1px solid #f1f5f9;">Year</th>
+              <th style="text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;padding:0 0 10px;border-bottom:1px solid #f1f5f9;">Overall</th>
+              <th style="text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#2563EB;padding:0 0 10px;border-bottom:1px solid #f1f5f9;">Pleasure</th>
+              <th style="text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#E8799A;padding:0 0 10px;border-bottom:1px solid #f1f5f9;">Achievement</th>
+              <th style="text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#1B3A6B;padding:0 0 10px;border-bottom:1px solid #f1f5f9;">Significance</th>
+              <th style="text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#6366f1;padding:0 0 10px;border-bottom:1px solid #f1f5f9;">Togetherness</th>
+            </tr></thead>
+            <tbody>
+              <tr><td style="padding:12px 0;border-bottom:1px solid #f8fafc;font-size:12px;color:#64748b;">2024</td><td style="padding:12px 0;border-bottom:1px solid #f8fafc;font-size:12px;font-weight:700;">63</td><td style="padding:12px 0;border-bottom:1px solid #f8fafc;font-size:12px;">60</td><td style="padding:12px 0;border-bottom:1px solid #f8fafc;font-size:12px;">70</td><td style="padding:12px 0;border-bottom:1px solid #f8fafc;font-size:12px;">65</td><td style="padding:12px 0;border-bottom:1px solid #f8fafc;font-size:12px;">68</td></tr>
+              <tr><td style="padding:12px 0;border-bottom:1px solid #f8fafc;font-size:12px;color:#64748b;">2025</td><td style="padding:12px 0;border-bottom:1px solid #f8fafc;font-size:12px;font-weight:700;">66</td><td style="padding:12px 0;border-bottom:1px solid #f8fafc;font-size:12px;">64</td><td style="padding:12px 0;border-bottom:1px solid #f8fafc;font-size:12px;">73</td><td style="padding:12px 0;border-bottom:1px solid #f8fafc;font-size:12px;">60</td><td style="padding:12px 0;border-bottom:1px solid #f8fafc;font-size:12px;">71</td></tr>
+              <tr><td style="padding:12px 0;font-size:12px;font-weight:700;color:#E8799A;">2026</td><td style="padding:12px 0;font-size:13px;font-weight:800;color:#E8799A;">68</td><td style="padding:12px 0;font-size:12px;">69</td><td style="padding:12px 0;font-size:12px;">76</td><td style="padding:12px 0;font-size:12px;color:#ef4444;font-weight:700;">54 ↓</td><td style="padding:12px 0;font-size:12px;">71</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div><!-- /history -->
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div>
+
+<script>
+// ── NAVIGATION ──────────────────────────────────────────────
+const topbarCfg = {
+  home:            { label: 'Your wellbeing', title: 'Welcome back, Sarah' },
+  survey:          { label: 'Annual assessment', title: '2026 Diagnostic' },
+  results:         { label: 'My scores', title: 'Your 2026 results' },
+  recommendations: { label: 'Personalised for you', title: 'Recommendations' },
+  resources:       { label: 'Learning', title: 'Resources from Paul Dolan' },
+  history:         { label: 'Year-on-year', title: 'My history' },
+};
+
+function navigate(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.getAttribute('onclick') && n.getAttribute('onclick').includes("'" + page + "'")) n.classList.add('active');
+  });
+  const cfg = topbarCfg[page];
+  document.getElementById('topbar-label').textContent = cfg.label;
+  document.getElementById('topbar-title').textContent = cfg.title;
+  document.getElementById('content').scrollTop = 0;
+  if (page === 'survey') resetSurvey();
+}
+
+// ── SURVEY ──────────────────────────────────────────────────
+const questions = [
+  // Pleasure (P)
+  { dim: 'P', label: 'P · Pleasure', text: 'I find genuine enjoyment in the day-to-day activities of my role.', hint: 'Think about a typical week at work - not your best or worst day.' },
+  { dim: 'P', label: 'P · Pleasure', text: 'I can focus on one task at a time without frequent interruption.', hint: 'Consider how often you feel pulled in multiple directions at once.' },
+  { dim: 'P', label: 'P · Pleasure', text: 'I enjoy the physical or virtual environment I work in.', hint: 'Your desk, office, home setup - how much does it affect your mood?' },
+  { dim: 'P', label: 'P · Pleasure', text: 'The pace of my work feels sustainable and manageable.', hint: 'Not just today - think about the past few months overall.' },
+  // Achievement (A)
+  { dim: 'A', label: 'A · Achievement', text: 'I feel proud of the quality of work I produce.', hint: 'Reflect on the past month - how often were you satisfied with your output?' },
+  { dim: 'A', label: 'A · Achievement', text: 'I have real opportunities to learn and grow in my role.', hint: 'Not just formal training - think about stretch projects, new skills, challenges.' },
+  { dim: 'A', label: 'A · Achievement', text: 'I feel challenged in a way that motivates rather than overwhelms me.', hint: 'The "just right" zone - demanding but not crushing.' },
+  { dim: 'A', label: 'A · Achievement', text: 'I regularly make visible progress on things that matter to me.', hint: 'At the end of a typical week, do you feel you moved forward?' },
+  // Significance (S)
+  { dim: 'S', label: 'S · Significance', text: 'I feel my work makes a meaningful difference to others.', hint: 'Others could mean colleagues, clients, society - whoever your work touches.' },
+  { dim: 'S', label: 'S · Significance', text: 'I understand clearly how my role connects to the bigger purpose of the organisation.', hint: 'Not just what the mission statement says - do you personally feel the connection?' },
+  { dim: 'S', label: 'S · Significance', text: 'My organisation recognises my contributions in ways that matter to me.', hint: 'Recognition can be formal or informal - what actually lands for you?' },
+  // Togetherness (T)
+  { dim: 'T', label: 'T · Togetherness', text: 'I feel a genuine sense of connection with my immediate team.', hint: 'Not just being friendly - a real feeling of belonging and mutual care.' },
+  { dim: 'T', label: 'T · Togetherness', text: 'My manager treats me with respect and shows genuine interest in my wellbeing.', hint: 'Think about your day-to-day interactions, not a single conversation.' },
+  { dim: 'T', label: 'T · Togetherness', text: 'I have at least one meaningful friendship at work.', hint: 'Someone you could be honest with, not just professionally polite.' },
+];
+
+let currentQ = 0;
+let answers = new Array(questions.length).fill(null);
+
+const dimColors = { P: '#2563EB', A: '#E8799A', S: '#1B3A6B', T: '#6366f1' };
+const dimLabels = { P: 'Pleasure - Day-to-day experience', A: 'Achievement - Sense of progress', S: 'Significance - Meaning & purpose', T: 'Togetherness - Connection & belonging' };
+const sectionDots = (q) => {
+  const dims = ['P','P','P','P','A','A','A','A','S','S','S','T','T','T'];
+  const current = dims[q];
+  const order = ['P','A','S','T'];
+  return order.map(d => d === current ? '●' : '○').join('');
+};
+const timeLeft = (q) => {
+  const mins = Math.max(1, Math.round((questions.length - q) * 0.6));
+  return `~${mins} min remaining`;
+};
+
+function resetSurvey() {
+  currentQ = 0;
+  answers = new Array(questions.length).fill(null);
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = questions[currentQ];
+  const total = questions.length;
+  const pct = Math.round(((currentQ) / total) * 100);
+
+  document.getElementById('survey-dim-label').textContent = dimLabels[q.dim];
+  document.getElementById('survey-counter').textContent = `Question ${currentQ + 1} of ${total}`;
+  document.getElementById('survey-progress').style.width = Math.max(4, pct) + '%';
+  document.getElementById('survey-section-dots').textContent = sectionDots(currentQ);
+  document.getElementById('survey-time-left').textContent = timeLeft(currentQ);
+
+  const badge = document.getElementById('q-dim-badge');
+  badge.textContent = q.label;
+  badge.className = 'q-dimension ' + q.dim;
+
+  document.getElementById('q-text').textContent = q.text;
+  document.getElementById('q-subtext').textContent = q.hint;
+
+  // Re-render rating buttons
+  const row = document.getElementById('rating-row');
+  row.innerHTML = '';
+  for (let i = 1; i <= 10; i++) {
+    const btn = document.createElement('button');
+    btn.className = 'rating-btn' + (answers[currentQ] === i ? ' selected ' + q.dim : '');
+    btn.textContent = i;
+    btn.onclick = () => selectRating(btn, i);
+    row.appendChild(btn);
+  }
+
+  // Back button
+  const back = document.getElementById('btn-back');
+  back.style.visibility = currentQ === 0 ? 'hidden' : 'visible';
+
+  // Next button
+  const next = document.getElementById('btn-next');
+  const isLast = currentQ === total - 1;
+  next.textContent = isLast ? 'Submit →' : 'Next →';
+  next.className = 'btn-next' + (answers[currentQ] !== null ? ' enabled' : '') + (isLast ? ' pink' : '');
+}
+
+function selectRating(btn, val) {
+  answers[currentQ] = val;
+  const q = questions[currentQ];
+  document.querySelectorAll('.rating-btn').forEach(b => {
+    b.className = 'rating-btn';
+    if (parseInt(b.textContent) === val) b.className = 'rating-btn selected ' + q.dim;
+  });
+  const next = document.getElementById('btn-next');
+  const isLast = currentQ === questions.length - 1;
+  next.className = 'btn-next enabled' + (isLast ? ' pink' : '');
+}
+
+function nextQuestion() {
+  if (answers[currentQ] === null) return;
+  if (currentQ === questions.length - 1) {
+    showComplete();
+  } else {
+    currentQ++;
+    renderQuestion();
+    document.getElementById('content').scrollTop = 0;
+  }
+}
+
+function prevQuestion() {
+  if (currentQ > 0) { currentQ--; renderQuestion(); }
+}
+
+function showComplete() {
+  const card = document.getElementById('question-card');
+  card.innerHTML = `
+    <div class="complete-screen">
+      <div class="complete-icon">🎉</div>
+      <div class="complete-title">Assessment complete</div>
+      <div class="complete-sub">Thank you, Sarah. Your answers are confidential and will never be shared individually with Vantara Group. Your personal scores are shown below.</div>
+      <div class="complete-scores">
+        <div class="complete-score-card"><div class="complete-score-val" style="color:#2563EB;">72</div><div class="complete-score-dim">Pleasure</div></div>
+        <div class="complete-score-card"><div class="complete-score-val" style="color:#E8799A;">78</div><div class="complete-score-dim">Achievement</div></div>
+        <div class="complete-score-card"><div class="complete-score-val" style="color:#1B3A6B;">57</div><div class="complete-score-dim">Significance</div></div>
+        <div class="complete-score-card"><div class="complete-score-val" style="color:#6366f1;">74</div><div class="complete-score-dim">Togetherness</div></div>
+      </div>
+      <button class="cta-btn" style="max-width:260px;margin:0 auto;" onclick="navigate('results')">View my full results →</button>
+      <div style="margin-top:12px;font-size:11px;color:#94a3b8;">Or explore your personalised recommendations</div>
+    </div>`;
+  document.getElementById('survey-progress').style.width = '100%';
+  document.getElementById('survey-counter').textContent = 'Complete ✓';
+  document.getElementById('survey-time-left').textContent = '';
+
+// ── RECOMMENDATIONS ───────────────────────────────────────────
+const recState = {};
+
+function markDone(id) {
+  const card = document.getElementById('rec-' + id);
+  const btn = document.getElementById('rec-' + id + '-btn');
+  const followup = document.getElementById('rec-' + id + '-followup');
+  card.classList.add('done');
+  btn.classList.add('done');
+  btn.innerHTML = '<span class="rec-check">✓</span> Done';
+  followup.classList.add('visible');
+  recState[id] = { done: true };
+}
+
+function followupAnswer(id, type, val, el) {
+  // Highlight selected button in its group
+  const opts = el.parentElement.querySelectorAll('.f-btn');
+  opts.forEach(b => { b.classList.remove('sel-yes','sel-no','sel-some'); });
+  el.classList.add(val === 'yes' ? 'sel-yes' : val === 'no' ? 'sel-no' : 'sel-some');
+
+  if (type === 'diff') {
+    // Show second question
+    const again = document.getElementById('rec-' + id + '-again');
+    const againOpts = document.getElementById('rec-' + id + '-again-opts');
+    if (again) again.style.display = 'block';
+    if (againOpts) againOpts.style.display = 'flex';
+    recState[id].diff = val;
+  } else if (type === 'again') {
+    // Show thanks
+    const thanks = document.getElementById('rec-' + id + '-thanks');
+    if (thanks) thanks.classList.add('visible');
+    recState[id].again = val;
+    // Disable all buttons in this followup
+    const followup = document.getElementById('rec-' + id + '-followup');
+    followup.querySelectorAll('.f-btn').forEach(b => { b.style.pointerEvents = 'none'; });
+  }
+}
+}
+</script>
+</body>
+</html>

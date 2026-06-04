@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wellfounded - Paul Dolan Admin</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #F0F4FA; color: #1B3A6B; font-size: 13px; }
+
+.layout { display: flex; height: 100vh; overflow: hidden; }
+
+/* SIDEBAR */
+.sidebar { width: 220px; background: #1B3A6B; display: flex; flex-direction: column; flex-shrink: 0; }
+.logo-area { padding: 20px 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.logo-wordmark { font-size: 15px; font-weight: 700; color: white; letter-spacing: -0.3px; margin-top: 8px; }
+.logo-wordmark span { color: #F0A0BC; }
+.logo-sub { font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 3px; letter-spacing: 0.5px; }
+nav { padding: 12px 0; flex: 1; overflow-y: auto; }
+.nav-section { font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,255,255,0.3); padding: 12px 20px 6px; }
+.nav-item { padding: 9px 20px; font-size: 12px; color: rgba(255,255,255,0.6); cursor: pointer; display: flex; align-items: center; gap: 10px; border-left: 3px solid transparent; transition: all 0.15s; user-select: none; }
+.nav-item.active { color: white; background: rgba(255,255,255,0.09); border-left-color: #E8799A; }
+.nav-item:hover:not(.active) { color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.04); }
+.nav-icon { font-size: 13px; width: 16px; text-align: center; flex-shrink: 0; }
+.nav-badge { margin-left: auto; background: #E8799A; color: white; font-size: 9px; font-weight: 700; border-radius: 10px; padding: 2px 7px; }
+.nav-badge.green { background: #10b981; }
+.sidebar-footer { padding: 14px 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+.paul-tag { display: flex; align-items: center; gap: 10px; }
+.paul-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #E8799A, #f0a0bc); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: white; flex-shrink: 0; }
+.paul-name { font-size: 12px; font-weight: 700; color: white; }
+.paul-role { font-size: 10px; color: rgba(255,255,255,0.4); }
+
+/* MAIN */
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.topbar { background: white; border-bottom: 1px solid #e2e8f0; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+.topbar-label { font-size: 10px; color: #94a3b8; letter-spacing: 1.5px; text-transform: uppercase; }
+.topbar-title { font-size: 17px; font-weight: 700; color: #1B3A6B; margin-top: 2px; }
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+.btn-primary { background: #1B3A6B; color: white; border: none; border-radius: 8px; padding: 8px 16px; font-size: 12px; font-weight: 600; cursor: pointer; }
+.btn-primary:hover { background: #14305a; }
+.btn-pink { background: #E8799A; color: white; border: none; border-radius: 8px; padding: 8px 16px; font-size: 12px; font-weight: 600; cursor: pointer; }
+.btn-pink:hover { background: #d4637f; }
+.btn-secondary { background: white; color: #1B3A6B; border: 1px solid #c5d5eb; border-radius: 8px; padding: 8px 14px; font-size: 12px; font-weight: 600; cursor: pointer; }
+.content { flex: 1; overflow-y: auto; padding: 24px 28px; }
+
+/* PAGES */
+.page { display: none; }
+.page.active { display: block; }
+
+/* CARDS */
+.card { background: white; border-radius: 12px; padding: 20px; }
+.card-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8; margin-bottom: 16px; }
+
+/* STAT STRIP */
+.stat-strip { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 16px; }
+.stat-card { background: white; border-radius: 12px; padding: 16px 18px; }
+.stat-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; margin-bottom: 6px; }
+.stat-value { font-size: 26px; font-weight: 800; color: #1B3A6B; line-height: 1; }
+.stat-sub { font-size: 11px; color: #94a3b8; margin-top: 4px; }
+.stat-trend { font-size: 11px; margin-top: 4px; }
+.up { color: #10b981; }
+.dn { color: #ef4444; }
+.nt { color: #94a3b8; }
+
+/* GRID */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+.two-col-wide { display: grid; grid-template-columns: 1fr 340px; gap: 14px; margin-bottom: 14px; }
+.three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+
+/* TRIGGER CARDS - the key feature of this view */
+.trigger-card { background: white; border-radius: 12px; padding: 16px 18px; border-left: 4px solid #e2e8f0; margin-bottom: 10px; display: flex; align-items: flex-start; gap: 14px; }
+.trigger-card.red { border-left-color: #ef4444; }
+.trigger-card.amber { border-left-color: #f59e0b; }
+.trigger-card.pink { border-left-color: #E8799A; }
+.trigger-card.blue { border-left-color: #2563EB; }
+.trigger-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+.trigger-body { flex: 1; }
+.trigger-org { font-size: 11px; font-weight: 800; color: #1B3A6B; }
+.trigger-desc { font-size: 12px; color: #334155; margin-top: 2px; line-height: 1.5; }
+.trigger-meta { font-size: 10px; color: #94a3b8; margin-top: 5px; }
+.trigger-actions { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.trigger-btn { font-size: 10px; font-weight: 700; border-radius: 6px; padding: 4px 10px; cursor: pointer; border: none; }
+.trigger-btn.primary { background: #1B3A6B; color: white; }
+.trigger-btn.primary:hover { background: #14305a; }
+.trigger-btn.pink { background: #E8799A; color: white; }
+.trigger-btn.pink:hover { background: #d4637f; }
+.trigger-btn.ghost { background: #f1f5f9; color: #64748b; }
+.trigger-badge { flex-shrink: 0; align-self: flex-start; }
+
+/* PILL */
+.pill { display: inline-block; border-radius: 10px; padding: 2px 9px; font-size: 10px; font-weight: 700; }
+.pill.red { background: #fee2e2; color: #991b1b; }
+.pill.amber { background: #fef3c7; color: #92400e; }
+.pill.green { background: #d1fae5; color: #065f46; }
+.pill.blue { background: #EEF3FB; color: #1B3A6B; }
+.pill.pink { background: #FDF0F5; color: #9B2551; }
+.pill.purple { background: #ede9fe; color: #5b21b6; }
+
+/* TABLE */
+table { width: 100%; border-collapse: collapse; }
+th { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; text-align: left; padding: 0 12px 10px 0; border-bottom: 1px solid #f1f5f9; }
+td { padding: 11px 12px 11px 0; border-bottom: 1px solid #f8fafc; font-size: 12px; color: #334155; vertical-align: middle; }
+td:first-child { font-weight: 600; color: #1B3A6B; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #fafbfc; }
+
+/* SCORE MINI */
+.score-mini { display: flex; gap: 4px; align-items: center; }
+.score-dot { width: 8px; height: 8px; border-radius: 50%; }
+.score-num { font-size: 12px; font-weight: 700; }
+
+/* SESSION ROW */
+.session-row { display: flex; align-items: center; gap: 12px; padding: 11px 0; border-bottom: 1px solid #f8fafc; }
+.session-row:last-child { border-bottom: none; }
+.session-date { width: 44px; text-align: center; flex-shrink: 0; background: #EEF3FB; border-radius: 8px; padding: 6px 4px; }
+.session-date-day { font-size: 16px; font-weight: 800; color: #1B3A6B; line-height: 1; }
+.session-date-mon { font-size: 9px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+.session-body { flex: 1; }
+.session-org { font-size: 12px; font-weight: 700; color: #1B3A6B; }
+.session-type { font-size: 11px; color: #64748b; margin-top: 2px; }
+.session-value { font-size: 12px; font-weight: 700; color: #10b981; flex-shrink: 0; }
+
+/* PIPELINE */
+.pipeline-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.pipeline-org { width: 130px; font-size: 12px; font-weight: 600; color: #1B3A6B; flex-shrink: 0; }
+.pipeline-bar-wrap { flex: 1; height: 8px; background: #f1f5f9; border-radius: 4px; }
+.pipeline-bar { height: 8px; border-radius: 4px; }
+.pipeline-val { width: 50px; text-align: right; font-size: 12px; font-weight: 700; color: #1B3A6B; }
+
+/* ALERT STRIP */
+.alert-strip { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 10px; padding: 12px 16px; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+.alert-strip-icon { font-size: 16px; flex-shrink: 0; }
+.alert-strip-text { font-size: 12px; color: #92400e; font-weight: 500; }
+.alert-strip-text strong { font-weight: 800; }
+
+/* REVENUE CARD */
+.revenue-card { background: linear-gradient(135deg, #1B3A6B 0%, #2563EB 100%); border-radius: 12px; padding: 20px; color: white; }
+.revenue-label { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,255,255,0.5); margin-bottom: 6px; }
+.revenue-value { font-size: 36px; font-weight: 800; color: white; line-height: 1; }
+.revenue-trend { font-size: 11px; color: #6ee7b7; margin-top: 6px; }
+.revenue-breakdown { margin-top: 14px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 14px; display: flex; flex-direction: column; gap: 8px; }
+.rev-row { display: flex; justify-content: space-between; align-items: center; font-size: 11px; }
+.rev-label { color: rgba(255,255,255,0.6); }
+.rev-val { color: white; font-weight: 700; }
+
+/* OPPORTUNITY VALUE */
+.opp-total { background: #FDF0F5; border-radius: 10px; padding: 14px 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+.opp-label { font-size: 11px; font-weight: 600; color: #9B2551; }
+.opp-value { font-size: 20px; font-weight: 800; color: #E8799A; }
+
+/* TABS */
+.tabs { display: flex; gap: 4px; margin-bottom: 16px; background: white; border-radius: 10px; padding: 4px; width: fit-content; }
+.tab { padding: 6px 16px; border-radius: 7px; font-size: 11px; font-weight: 600; cursor: pointer; color: #94a3b8; border: none; background: transparent; }
+.tab.active { background: #1B3A6B; color: white; }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="logo-area">
+      <svg width="52" height="17" viewBox="0 819.5 69 23" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <clipPath id="sg" clipPathUnits="userSpaceOnUse">
+            <path fill-rule="evenodd" transform="matrix(.1,0,0,-.1,0,842)"
+              d="M646.547 98.4414C643.547 38.0781 623.801 19.2539 561.828 17.9023 552.719 17.7109 543.598 17.9023 534.535 17.9023 433.449 17.7578 414.105 33.1094 394.055 129.27 386.703 164.426 394.34 180.371 429.953 190.047 473.539 203.105 519.477 206.277 564.438 199.348 645.668 185.207 650.551 181.391 646.555 98.4414H646.547Z
+              M295.336 129.27C275.336 33.1094 255.953 17.7578 154.855 17.9023 145.785 17.9023 136.68 17.7109 127.566 17.9023 65.5664 19.2539 45.7734 38.0781 42.8438 98.4414 38.8477 181.438 43.7305 185.207 124.969 199.348 169.91 206.277 215.832 203.105 259.398 190.047 295.059 180.371 302.688 164.418 295.336 129.27Z
+              M668.832 199.109C652.98 203.23 636.898 206.32 620.656 208.367 546.984 220.477 471.645 217.855 398.988 200.648 363.031 194.816 326.363 194.816 290.406 200.648 217.742 217.855 142.387 220.477 68.6953 208.367 52.4688 206.316 36.3945 203.227 20.5664 199.109 3.77734 194.23-6.26172 177.352 4.38672 165.539 31.8164 135.227 22.8984 96.6797 33.4961 62.9258 39.5547 39.7227 56.3867 20.8516 78.7383 12.1914 132.445-8.60156 186.527 .00390625 239.156 17.1211 279.797 30.3242 295.047 66.5469 309.156 102.727 311.348 107.738 313.91 112.57 316.824 117.191 325.477 131.934 334.828 139.559 344.637 140.109 354.496 139.551 363.852 131.934 372.484 117.191 375.402 112.57 377.973 107.738 380.16 102.727 394.301 66.5469 409.543 30.3242 450.16 17.1211 502.797 .015625 556.879-8.60156 610.578 12.1914 632.934 20.8516 649.758 39.7227 655.813 62.9258 666.379 96.6797 657.484 135.227 684.926 165.539 695.656 177.352 685.617 194.23 668.832 199.109Z"/>
+          </clipPath>
+        </defs>
+        <rect x="0" y="819" width="35" height="24" fill="white" clip-path="url(#sg)"/>
+        <rect x="34" y="819" width="36" height="24" fill="#F0A0BC" clip-path="url(#sg)"/>
+      </svg>
+      <div class="logo-wordmark">well<span>founded</span></div>
+      <div class="logo-sub">Admin · Paul Dolan team</div>
+    </div>
+    <nav>
+      <div class="nav-section">Overview</div>
+      <div class="nav-item active" onclick="navigate('dashboard')"><span class="nav-icon">◈</span> Dashboard</div>
+      <div class="nav-item" onclick="navigate('opportunities')"><span class="nav-icon">⚡</span> Opportunities <span class="nav-badge">7</span></div>
+      <div class="nav-item" onclick="navigate('sessions')"><span class="nav-icon">📅</span> Sessions <span class="nav-badge green">3</span></div>
+      <div class="nav-section">Clients</div>
+      <div class="nav-item" onclick="navigate('clients')"><span class="nav-icon">⊞</span> All clients</div>
+      <div class="nav-item" onclick="navigate('diagnostics')"><span class="nav-icon">◎</span> Diagnostics</div>
+      <div class="nav-item" onclick="navigate('reports')"><span class="nav-icon">▤</span> Reports</div>
+      <div class="nav-section">Revenue</div>
+      <div class="nav-item" onclick="navigate('pipeline')"><span class="nav-icon">↗</span> Pipeline</div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="paul-tag">
+        <div class="paul-avatar">PD</div>
+        <div>
+          <div class="paul-name">Prof. Paul Dolan</div>
+          <div class="paul-role">LSE · Wellfounded</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <div class="topbar-label" id="topbar-label">Admin overview</div>
+        <div class="topbar-title" id="topbar-title">Dashboard</div>
+      </div>
+      <div class="topbar-right" id="topbar-right">
+        <button class="btn-secondary">Export CSV</button>
+        <button class="btn-pink" onclick="alert('New client onboarding flow')">+ Add client</button>
+      </div>
+    </div>
+    <div class="content" id="content">
+
+      <!-- DASHBOARD -->
+      <div class="page active" id="page-dashboard">
+        <div class="alert-strip">
+          <div class="alert-strip-icon">⚡</div>
+          <div class="alert-strip-text"><strong>7 upsell opportunities</strong> triggered this month - 3 urgent. Vantara Group Finance at 41 Significance is the highest priority.</div>
+          <button class="trigger-btn primary" style="margin-left:auto;flex-shrink:0;" onclick="navigate('opportunities')">View all →</button>
+        </div>
+
+        <div class="stat-strip">
+          <div class="stat-card"><div class="stat-label">Active clients</div><div class="stat-value">23</div><div class="stat-sub">+4 this quarter</div><div class="stat-trend up">↑ Growing</div></div>
+          <div class="stat-card"><div class="stat-label">Diagnostics run</div><div class="stat-value">18</div><div class="stat-sub">of 23 clients</div><div class="stat-trend nt">5 not yet assessed</div></div>
+          <div class="stat-card"><div class="stat-label">Sessions booked</div><div class="stat-value">3</div><div class="stat-sub">next 30 days</div><div class="stat-trend up">↑ £28,500 value</div></div>
+          <div class="stat-card"><div class="stat-label">Opportunities</div><div class="stat-value" style="color:#E8799A;">7</div><div class="stat-sub">triggered this month</div><div class="stat-trend" style="color:#E8799A;">3 urgent</div></div>
+          <div class="stat-card"><div class="stat-label">2026 revenue</div><div class="stat-value">£312k</div><div class="stat-sub">of £420k target</div><div class="stat-trend up">↑ +24% YoY</div></div>
+        </div>
+
+        <div class="two-col-wide">
+          <div>
+            <!-- TOP OPPORTUNITIES -->
+            <div class="card-title">Top upsell opportunities</div>
+            <div class="trigger-card red">
+              <div class="trigger-icon">🔴</div>
+              <div class="trigger-body">
+                <div class="trigger-org">Vantara Group</div>
+                <div class="trigger-desc">Finance team Significance score at 41 - well below the 50 intervention threshold. Team of 160 employees. High churn risk.</div>
+                <div class="trigger-meta">Triggered 3 days ago · Diagnostic completed 28 Feb 2026</div>
+                <div class="trigger-actions">
+                  <button class="trigger-btn pink" onclick="alert('Booking flow opened')">Book workshop - £12,500</button>
+                  <button class="trigger-btn primary" onclick="alert('Spotlight report generated')">Generate spotlight report</button>
+                  <button class="trigger-btn ghost" onclick="alert('Email drafted')">Draft email to HR</button>
+                </div>
+              </div>
+              <div class="trigger-badge"><span class="pill red">Urgent</span></div>
+            </div>
+
+            <div class="trigger-card amber">
+              <div class="trigger-icon">🟡</div>
+              <div class="trigger-body">
+                <div class="trigger-org">Meridian Capital</div>
+                <div class="trigger-desc">Overall score dropped 9 points year-on-year (71 to 62). Significance and Togetherness both declining. Annual re-assessment due in 2 months.</div>
+                <div class="trigger-meta">Triggered 1 week ago · Score: 62 (-9 YoY)</div>
+                <div class="trigger-actions">
+                  <button class="trigger-btn pink" onclick="alert('Debrief booked')">Book debrief - £8,500</button>
+                  <button class="trigger-btn ghost">Schedule re-assessment</button>
+                </div>
+              </div>
+              <div class="trigger-badge"><span class="pill amber">Elevated</span></div>
+            </div>
+
+            <div class="trigger-card pink">
+              <div class="trigger-icon">⏰</div>
+              <div class="trigger-body">
+                <div class="trigger-org">Thornfield Partners</div>
+                <div class="trigger-desc">Annual re-assessment due in 3 weeks. Last year's Togetherness score was borderline (63). Early re-engagement recommended.</div>
+                <div class="trigger-meta">Re-assessment window: 15 Jun 2026</div>
+                <div class="trigger-actions">
+                  <button class="trigger-btn primary" onclick="alert('Reminder sent')">Send re-assessment invite</button>
+                  <button class="trigger-btn ghost">View last report</button>
+                </div>
+              </div>
+              <div class="trigger-badge"><span class="pill pink">Due soon</span></div>
+            </div>
+
+            <div style="text-align:center;margin-top:8px;">
+              <button class="btn-secondary" style="font-size:11px;" onclick="navigate('opportunities')">View all 7 opportunities →</button>
+            </div>
+          </div>
+
+          <!-- RIGHT COLUMN -->
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div class="revenue-card">
+              <div class="revenue-label">2026 revenue to date</div>
+              <div class="revenue-value">£312,000</div>
+              <div class="revenue-trend">↑ +24% vs 2025 (£252k)</div>
+              <div class="revenue-breakdown">
+                <div class="rev-row"><div class="rev-label">Diagnostics</div><div class="rev-val">£87,000</div></div>
+                <div class="rev-row"><div class="rev-label">Debriefs</div><div class="rev-val">£102,000</div></div>
+                <div class="rev-row"><div class="rev-label">Workshops</div><div class="rev-val">£74,500</div></div>
+                <div class="rev-row"><div class="rev-label">Re-assessments</div><div class="rev-val">£48,500</div></div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-title">Upcoming sessions</div>
+              <div class="session-row">
+                <div class="session-date"><div class="session-date-day">10</div><div class="session-date-mon">Jun</div></div>
+                <div class="session-body"><div class="session-org">Vantara Group</div><div class="session-type">90-min debrief · Paul + HR Director</div></div>
+                <div class="session-value">£8,500</div>
+              </div>
+              <div class="session-row">
+                <div class="session-date"><div class="session-date-day">17</div><div class="session-date-mon">Jun</div></div>
+                <div class="session-body"><div class="session-org">Harrow &amp; Stone LLP</div><div class="session-type">Half-day workshop · 22 attendees</div></div>
+                <div class="session-value">£14,000</div>
+              </div>
+              <div class="session-row">
+                <div class="session-date"><div class="session-date-day">24</div><div class="session-date-mon">Jun</div></div>
+                <div class="session-body"><div class="session-org">Meridian Capital</div><div class="session-type">Keynote · Annual leadership offsite</div></div>
+                <div class="session-value">£6,000</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div><!-- /dashboard -->
+
+      <!-- OPPORTUNITIES -->
+      <div class="page" id="page-opportunities">
+        <div class="opp-total">
+          <div class="opp-label">Total pipeline value from triggered opportunities</div>
+          <div class="opp-value">£94,500</div>
+        </div>
+
+        <div class="trigger-card red">
+          <div class="trigger-icon">🔴</div>
+          <div class="trigger-body">
+            <div class="trigger-org">Vantara Group — Finance team</div>
+            <div class="trigger-desc">Significance score 41 (below 50 threshold). 160 employees. Declining 7 points YoY. High churn risk signal - similar patterns in our data precede 18%+ attrition within 12 months.</div>
+            <div class="trigger-meta">Rule triggered: Significance below 50 · Recommended: Team workshop</div>
+            <div class="trigger-actions">
+              <button class="trigger-btn pink">Book workshop - £12,500</button>
+              <button class="trigger-btn primary">Generate spotlight report</button>
+              <button class="trigger-btn ghost">Draft email to CPO</button>
+              <button class="trigger-btn ghost">Dismiss</button>
+            </div>
+          </div>
+          <span class="pill red">Urgent</span>
+        </div>
+
+        <div class="trigger-card red">
+          <div class="trigger-icon">🔴</div>
+          <div class="trigger-body">
+            <div class="trigger-org">Meridian Capital — Operations</div>
+            <div class="trigger-desc">Overall score dropped from 71 to 62 (-9 pts). Two dimensions declining simultaneously: Significance (68→59) and Togetherness (72→61). Classic burnout precursor pattern.</div>
+            <div class="trigger-meta">Rule triggered: 2+ dimensions declining · Recommended: Full audit review + debrief</div>
+            <div class="trigger-actions">
+              <button class="trigger-btn pink">Book debrief - £8,500</button>
+              <button class="trigger-btn primary">Propose audit review</button>
+              <button class="trigger-btn ghost">Dismiss</button>
+            </div>
+          </div>
+          <span class="pill red">Urgent</span>
+        </div>
+
+        <div class="trigger-card amber">
+          <div class="trigger-icon">🟡</div>
+          <div class="trigger-body">
+            <div class="trigger-org">Thornfield Partners</div>
+            <div class="trigger-desc">Annual re-assessment due in 3 weeks. Previous Togetherness score was borderline (63). Recommend early re-engagement and upsell of enhanced package including team spotlight.</div>
+            <div class="trigger-meta">Rule triggered: Re-assessment due within 30 days · Recommended: Early outreach</div>
+            <div class="trigger-actions">
+              <button class="trigger-btn primary">Send re-assessment invite - £3,500</button>
+              <button class="trigger-btn ghost">Propose enhanced package - £5,200</button>
+              <button class="trigger-btn ghost">Dismiss</button>
+            </div>
+          </div>
+          <span class="pill amber">Due soon</span>
+        </div>
+
+        <div class="trigger-card amber">
+          <div class="trigger-icon">🟡</div>
+          <div class="trigger-body">
+            <div class="trigger-org">Castleford Advisory</div>
+            <div class="trigger-desc">First diagnostic completed. Overall score 71 but Significance at 58 - just above watch threshold. Ideal moment for a post-diagnostic debrief while findings are fresh.</div>
+            <div class="trigger-meta">Rule triggered: Post-diagnostic window (within 30 days of report) · Recommended: Debrief</div>
+            <div class="trigger-actions">
+              <button class="trigger-btn pink">Book debrief - £8,500</button>
+              <button class="trigger-btn ghost">Send follow-up email</button>
+              <button class="trigger-btn ghost">Dismiss</button>
+            </div>
+          </div>
+          <span class="pill amber">Elevated</span>
+        </div>
+
+        <div class="trigger-card blue">
+          <div class="trigger-icon">🔵</div>
+          <div class="trigger-body">
+            <div class="trigger-org">Harrow &amp; Stone LLP</div>
+            <div class="trigger-desc">3 years of consistent re-assessment. Scores improving year-on-year. Ideal candidate for a keynote at their annual leadership conference - warm relationship, proven ROI narrative.</div>
+            <div class="trigger-meta">Rule triggered: 3+ year client, score improving · Recommended: Keynote pitch</div>
+            <div class="trigger-actions">
+              <button class="trigger-btn primary">Pitch keynote - £6,000+</button>
+              <button class="trigger-btn ghost">Dismiss</button>
+            </div>
+          </div>
+          <span class="pill blue">Growth</span>
+        </div>
+
+        <div class="trigger-card blue">
+          <div class="trigger-icon">🔵</div>
+          <div class="trigger-body">
+            <div class="trigger-org">Nexbridge Consulting</div>
+            <div class="trigger-desc">No diagnostic in 14 months. Lapsed client. Last score was 67. Warm outreach with updated benchmark data could re-engage ahead of their likely HR review cycle (Sept).</div>
+            <div class="trigger-meta">Rule triggered: No activity 12+ months · Recommended: Re-engagement</div>
+            <div class="trigger-actions">
+              <button class="trigger-btn primary">Send re-engagement email</button>
+              <button class="trigger-btn ghost">Dismiss</button>
+            </div>
+          </div>
+          <span class="pill blue">Re-engage</span>
+        </div>
+
+        <div class="trigger-card blue">
+          <div class="trigger-icon">🔵</div>
+          <div class="trigger-body">
+            <div class="trigger-org">Altera Group</div>
+            <div class="trigger-desc">New 500+ employee org onboarded but no diagnostic started. 3 weeks since sign-up. Nudge needed to get the survey launched before momentum is lost.</div>
+            <div class="trigger-meta">Rule triggered: Onboarded but no diagnostic launched after 14 days</div>
+            <div class="trigger-actions">
+              <button class="trigger-btn primary">Chase diagnostic launch</button>
+              <button class="trigger-btn ghost">Dismiss</button>
+            </div>
+          </div>
+          <span class="pill purple">Setup</span>
+        </div>
+      </div><!-- /opportunities -->
+
+      <!-- SESSIONS -->
+      <div class="page" id="page-sessions">
+        <div class="stat-strip" style="grid-template-columns:repeat(4,1fr);">
+          <div class="stat-card"><div class="stat-label">Sessions this month</div><div class="stat-value">3</div><div class="stat-sub">£28,500 value</div></div>
+          <div class="stat-card"><div class="stat-label">Sessions YTD</div><div class="stat-value">19</div><div class="stat-sub">£164,500 value</div></div>
+          <div class="stat-card"><div class="stat-label">Avg session value</div><div class="stat-value">£8.7k</div><div class="stat-sub">+12% vs 2025</div></div>
+          <div class="stat-card"><div class="stat-label">Conversion rate</div><div class="stat-value">64%</div><div class="stat-sub">Opportunity to booked</div><div class="stat-trend up">↑ +8pts YoY</div></div>
+        </div>
+        <div class="card">
+          <div class="card-title">All sessions - 2026</div>
+          <table>
+            <thead><tr><th>Date</th><th>Client</th><th>Type</th><th>Attendees</th><th>Value</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+              <tr><td>10 Jun</td><td>Vantara Group</td><td>90-min debrief</td><td>4</td><td class="up">£8,500</td><td><span class="pill green">Confirmed</span></td><td><button class="trigger-btn ghost">View</button></td></tr>
+              <tr><td>17 Jun</td><td>Harrow &amp; Stone LLP</td><td>Half-day workshop</td><td>22</td><td class="up">£14,000</td><td><span class="pill green">Confirmed</span></td><td><button class="trigger-btn ghost">View</button></td></tr>
+              <tr><td>24 Jun</td><td>Meridian Capital</td><td>Keynote</td><td>85</td><td class="up">£6,000</td><td><span class="pill green">Confirmed</span></td><td><button class="trigger-btn ghost">View</button></td></tr>
+              <tr><td>14 May</td><td>Castleford Advisory</td><td>90-min debrief</td><td>3</td><td>£8,500</td><td><span class="pill blue">Completed</span></td><td><button class="trigger-btn ghost">View</button></td></tr>
+              <tr><td>2 May</td><td>Thornfield Partners</td><td>Full-day workshop</td><td>18</td><td>£22,000</td><td><span class="pill blue">Completed</span></td><td><button class="trigger-btn ghost">View</button></td></tr>
+              <tr><td>18 Apr</td><td>Nexbridge Consulting</td><td>90-min debrief</td><td>5</td><td>£8,500</td><td><span class="pill blue">Completed</span></td><td><button class="trigger-btn ghost">View</button></td></tr>
+              <tr><td>3 Apr</td><td>Vantara Group</td><td>90-min debrief</td><td>4</td><td>£8,500</td><td><span class="pill blue">Completed</span></td><td><button class="trigger-btn ghost">View</button></td></tr>
+              <tr><td>TBC</td><td>Meridian Capital</td><td>Debrief (proposed)</td><td>-</td><td>£8,500</td><td><span class="pill amber">Proposed</span></td><td><button class="trigger-btn pink">Chase</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div><!-- /sessions -->
+
+      <!-- CLIENTS -->
+      <div class="page" id="page-clients">
+        <div class="card">
+          <div class="card-title">All clients (23)</div>
+          <table>
+            <thead><tr><th>Organisation</th><th>Sector</th><th>Employees</th><th>Overall</th><th>Lowest dim.</th><th>Last assessed</th><th>Next due</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td>Vantara Group</td><td>Consulting</td><td>1,200</td><td><span class="score-num" style="color:#10b981;">68</span></td><td><span class="pill" style="background:#EEF3FB;color:#1B3A6B;">S 59</span></td><td>Feb 2026</td><td>Jan 2027</td><td><span class="pill amber">Trigger active</span></td></tr>
+              <tr><td>Meridian Capital</td><td>Finance</td><td>340</td><td><span class="score-num" style="color:#f59e0b;">62</span></td><td><span class="pill" style="background:#fee2e2;color:#991b1b;">T 61</span></td><td>Jan 2026</td><td>Jan 2027</td><td><span class="pill red">Trigger active</span></td></tr>
+              <tr><td>Harrow &amp; Stone LLP</td><td>Legal</td><td>280</td><td><span class="score-num" style="color:#10b981;">74</span></td><td><span class="pill" style="background:#EEF3FB;color:#1B3A6B;">S 68</span></td><td>Mar 2026</td><td>Mar 2027</td><td><span class="pill green">On track</span></td></tr>
+              <tr><td>Thornfield Partners</td><td>PE</td><td>95</td><td><span class="score-num" style="color:#10b981;">71</span></td><td><span class="pill" style="background:#fef3c7;color:#92400e;">T 63</span></td><td>Jun 2025</td><td>Jun 2026</td><td><span class="pill amber">Due soon</span></td></tr>
+              <tr><td>Castleford Advisory</td><td>Strategy</td><td>180</td><td><span class="score-num" style="color:#10b981;">71</span></td><td><span class="pill" style="background:#fef3c7;color:#92400e;">S 58</span></td><td>Apr 2026</td><td>Apr 2027</td><td><span class="pill blue">New client</span></td></tr>
+              <tr><td>Nexbridge Consulting</td><td>Tech</td><td>520</td><td><span class="score-num" style="color:#10b981;">67</span></td><td><span class="pill" style="background:#EEF3FB;color:#1B3A6B;">S 61</span></td><td>Apr 2025</td><td>Overdue</td><td><span class="pill red">Lapsed</span></td></tr>
+              <tr><td>Altera Group</td><td>Pharma</td><td>680</td><td><span style="color:#94a3b8;font-size:12px;">-</span></td><td><span style="color:#94a3b8;font-size:12px;">Not assessed</span></td><td>Never</td><td>Pending</td><td><span class="pill purple">Setup</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div><!-- /clients -->
+
+      <!-- DIAGNOSTICS -->
+      <div class="page" id="page-diagnostics">
+        <div class="stat-strip" style="grid-template-columns:repeat(4,1fr);">
+          <div class="stat-card"><div class="stat-label">Active diagnostics</div><div class="stat-value">4</div><div class="stat-sub">In field now</div></div>
+          <div class="stat-card"><div class="stat-label">Completed 2026</div><div class="stat-value">14</div><div class="stat-sub">Avg response rate 74%</div></div>
+          <div class="stat-card"><div class="stat-label">Reports generated</div><div class="stat-value">22</div><div class="stat-sub">This year</div></div>
+          <div class="stat-card"><div class="stat-label">Not yet started</div><div class="stat-value" style="color:#E8799A;">5</div><div class="stat-sub">Clients onboarded</div></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Diagnostic tracker</div>
+          <table>
+            <thead><tr><th>Client</th><th>Launched</th><th>Closed</th><th>Invited</th><th>Responded</th><th>Rate</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+              <tr><td>Vantara Group</td><td>14 Feb</td><td>28 Feb</td><td>1,200</td><td>847</td><td>71%</td><td><span class="pill green">Report live</span></td><td><button class="trigger-btn ghost">View</button></td></tr>
+              <tr><td>Meridian Capital</td><td>10 Jan</td><td>24 Jan</td><td>340</td><td>241</td><td>71%</td><td><span class="pill green">Report live</span></td><td><button class="trigger-btn ghost">View</button></td></tr>
+              <tr><td>Harrow &amp; Stone LLP</td><td>3 Mar</td><td>17 Mar</td><td>280</td><td>218</td><td>78%</td><td><span class="pill green">Report live</span></td><td><button class="trigger-btn ghost">View</button></td></tr>
+              <tr><td>Castleford Advisory</td><td>1 Apr</td><td>15 Apr</td><td>180</td><td>124</td><td>69%</td><td><span class="pill green">Report live</span></td><td><button class="trigger-btn ghost">View</button></td></tr>
+              <tr><td>Altera Group</td><td>-</td><td>-</td><td>680</td><td>-</td><td>-</td><td><span class="pill amber">Not launched</span></td><td><button class="trigger-btn primary">Send invite</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div><!-- /diagnostics -->
+
+      <!-- REPORTS -->
+      <div class="page" id="page-reports">
+        <div class="card">
+          <div class="card-title">All generated reports</div>
+          <table>
+            <thead><tr><th>Report</th><th>Client</th><th>Generated</th><th>Type</th><th>Pages</th><th></th></tr></thead>
+            <tbody>
+              <tr><td>Vantara Group - Full Audit 2026</td><td>Vantara Group</td><td>12 Mar 2026</td><td><span class="pill blue">Full audit</span></td><td>34</td><td><button class="trigger-btn ghost">Download</button></td></tr>
+              <tr><td>Vantara Group - Finance Spotlight</td><td>Vantara Group</td><td>18 Mar 2026</td><td><span class="pill pink">Spotlight</span></td><td>12</td><td><button class="trigger-btn ghost">Download</button></td></tr>
+              <tr><td>Meridian Capital - Full Audit 2026</td><td>Meridian Capital</td><td>2 Feb 2026</td><td><span class="pill blue">Full audit</span></td><td>28</td><td><button class="trigger-btn ghost">Download</button></td></tr>
+              <tr><td>Harrow &amp; Stone - Full Audit 2026</td><td>Harrow &amp; Stone LLP</td><td>25 Mar 2026</td><td><span class="pill blue">Full audit</span></td><td>31</td><td><button class="trigger-btn ghost">Download</button></td></tr>
+              <tr><td>Castleford Advisory - Full Audit 2026</td><td>Castleford Advisory</td><td>22 Apr 2026</td><td><span class="pill blue">Full audit</span></td><td>26</td><td><button class="trigger-btn ghost">Download</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div><!-- /reports -->
+
+      <!-- PIPELINE -->
+      <div class="page" id="page-pipeline">
+        <div class="two-col">
+          <div class="revenue-card">
+            <div class="revenue-label">2026 revenue to date</div>
+            <div class="revenue-value">£312,000</div>
+            <div class="revenue-trend">↑ +24% vs 2025 (£252k)</div>
+            <div class="revenue-breakdown">
+              <div class="rev-row"><div class="rev-label">Diagnostics (£2-5k)</div><div class="rev-val">£87,000</div></div>
+              <div class="rev-row"><div class="rev-label">Debriefs (£8.5k)</div><div class="rev-val">£102,000</div></div>
+              <div class="rev-row"><div class="rev-label">Workshops (£12-22k)</div><div class="rev-val">£74,500</div></div>
+              <div class="rev-row"><div class="rev-label">Re-assessments (£3.5k)</div><div class="rev-val">£48,500</div></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Opportunity pipeline (£94,500)</div>
+            <div class="pipeline-row"><div class="pipeline-org">Vantara workshop</div><div class="pipeline-bar-wrap"><div class="pipeline-bar" style="width:85%;background:#ef4444;"></div></div><div class="pipeline-val">£12,500</div></div>
+            <div class="pipeline-row"><div class="pipeline-org">Meridian debrief</div><div class="pipeline-bar-wrap"><div class="pipeline-bar" style="width:70%;background:#f59e0b;"></div></div><div class="pipeline-val">£8,500</div></div>
+            <div class="pipeline-row"><div class="pipeline-org">Thornfield re-assess</div><div class="pipeline-bar-wrap"><div class="pipeline-bar" style="width:60%;background:#E8799A;"></div></div><div class="pipeline-val">£5,200</div></div>
+            <div class="pipeline-row"><div class="pipeline-org">Castleford debrief</div><div class="pipeline-bar-wrap"><div class="pipeline-bar" style="width:55%;background:#6366f1;"></div></div><div class="pipeline-val">£8,500</div></div>
+            <div class="pipeline-row"><div class="pipeline-org">Harrow keynote</div><div class="pipeline-bar-wrap"><div class="pipeline-bar" style="width:45%;background:#2563EB;"></div></div><div class="pipeline-val">£6,000</div></div>
+            <div class="pipeline-row"><div class="pipeline-org">Nexbridge re-engage</div><div class="pipeline-bar-wrap"><div class="pipeline-bar" style="width:30%;background:#94a3b8;"></div></div><div class="pipeline-val">£3,500</div></div>
+            <div class="pipeline-row"><div class="pipeline-org">Altera diagnostic</div><div class="pipeline-bar-wrap"><div class="pipeline-bar" style="width:20%;background:#94a3b8;"></div></div><div class="pipeline-val">£4,800</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Revenue by client - 2026 YTD</div>
+          <table>
+            <thead><tr><th>Client</th><th>Diagnostic</th><th>Sessions</th><th>Reports</th><th>Total 2026</th><th>Total 2025</th><th>Growth</th></tr></thead>
+            <tbody>
+              <tr><td>Vantara Group</td><td>£4,200</td><td>£17,000</td><td>£800</td><td class="up">£22,000</td><td>£16,500</td><td class="up">↑ +33%</td></tr>
+              <tr><td>Meridian Capital</td><td>£3,800</td><td>£14,000</td><td>£600</td><td class="up">£18,400</td><td>£14,000</td><td class="up">↑ +31%</td></tr>
+              <tr><td>Harrow &amp; Stone LLP</td><td>£3,200</td><td>£36,000</td><td>£600</td><td class="up">£39,800</td><td>£28,500</td><td class="up">↑ +40%</td></tr>
+              <tr><td>Thornfield Partners</td><td>£2,400</td><td>£22,000</td><td>£400</td><td class="up">£24,800</td><td>£22,000</td><td class="up">↑ +13%</td></tr>
+              <tr><td>Castleford Advisory</td><td>£2,800</td><td>£8,500</td><td>£400</td><td class="up">£11,700</td><td>-</td><td class="up">New</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div><!-- /pipeline -->
+
+    </div><!-- /content -->
+  </div>
+</div>
+
+<script>
+const cfg = {
+  dashboard:     { label: 'Admin overview', title: 'Dashboard', right: '<button class="btn-secondary">Export CSV</button><button class="btn-pink" onclick="alert(\'New client\')">+ Add client</button>' },
+  opportunities: { label: 'Revenue triggers', title: 'Upsell opportunities (7)', right: '<button class="btn-secondary">Export</button><button class="btn-primary" onclick="alert(\'All dismissed\')">Dismiss all low priority</button>' },
+  sessions:      { label: 'Booked work', title: 'Sessions', right: '<button class="btn-pink" onclick="alert(\'New session\')">+ Book session</button>' },
+  clients:       { label: 'Account management', title: 'All clients (23)', right: '<button class="btn-secondary">Export</button><button class="btn-pink" onclick="alert(\'Add client\')">+ Add client</button>' },
+  diagnostics:   { label: 'Survey operations', title: 'Diagnostics', right: '<button class="btn-primary" onclick="alert(\'Launch\')">Launch diagnostic</button>' },
+  reports:       { label: 'Documents', title: 'Reports', right: '<button class="btn-primary" onclick="alert(\'Generating\')">Generate report</button>' },
+  pipeline:      { label: 'Commercial', title: 'Revenue pipeline', right: '<button class="btn-secondary">Export</button>' },
+};
+function navigate(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.getAttribute('onclick') && n.getAttribute('onclick').includes("'" + page + "'")) n.classList.add('active');
+  });
+  const c = cfg[page];
+  document.getElementById('topbar-label').textContent = c.label;
+  document.getElementById('topbar-title').textContent = c.title;
+  document.getElementById('topbar-right').innerHTML = c.right;
+  document.getElementById('content').scrollTop = 0;
+}
+</script>
+</body>
+</html>

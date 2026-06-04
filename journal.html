@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Wellfounded - PAST Journal</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #F0F4FA;
+  color: #1B3A6B;
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+/* SCREENS */
+.screen { display: none; min-height: 100vh; flex-direction: column; }
+.screen.active { display: flex; }
+
+/* HEADER */
+.hdr { padding: 18px 22px 14px; display: flex; align-items: center; justify-content: space-between; background: white; border-bottom: 1px solid #f1f5f9; flex-shrink: 0; }
+.hdr-logo { display: flex; align-items: center; gap: 8px; }
+.hdr-wordmark { font-size: 15px; font-weight: 800; color: #1B3A6B; }
+.hdr-wordmark span { color: #E8799A; }
+.hdr-right { font-size: 11px; color: #94a3b8; }
+.hdr-back { font-size: 13px; color: #94a3b8; cursor: pointer; padding: 4px 0; }
+.hdr-back:active { color: #1B3A6B; }
+
+/* LANDING */
+.landing-body { flex: 1; padding: 28px 22px 32px; display: flex; flex-direction: column; }
+.landing-pill { display: inline-block; background: #EEF3FB; border-radius: 20px; padding: 4px 12px; font-size: 10px; font-weight: 700; color: #1B3A6B; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 20px; }
+.landing-title { font-size: 26px; font-weight: 900; color: #1B3A6B; line-height: 1.25; margin-bottom: 12px; }
+.landing-sub { font-size: 14px; color: #64748b; line-height: 1.65; margin-bottom: 28px; }
+.past-chips { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 28px; }
+.past-chip { border-radius: 12px; padding: 14px 16px; }
+.past-chip.P { background: #dbeafe; }
+.past-chip.A { background: #FDF0F5; }
+.past-chip.S { background: #EEF3FB; }
+.past-chip.T { background: #ede9fe; }
+.chip-letter { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px; }
+.chip-letter.P { color: #1e40af; }
+.chip-letter.A { color: #9B2551; }
+.chip-letter.S { color: #1B3A6B; }
+.chip-letter.T { color: #5b21b6; }
+.chip-name { font-size: 13px; font-weight: 700; color: #1B3A6B; }
+.chip-prompt { font-size: 11px; color: #64748b; margin-top: 3px; line-height: 1.4; font-style: italic; }
+.start-btn { width: 100%; padding: 18px; background: #1B3A6B; color: white; border: none; border-radius: 16px; font-size: 16px; font-weight: 800; cursor: pointer; margin-top: auto; }
+.start-btn:active { background: #14305a; transform: scale(0.98); }
+.time-note { text-align: center; font-size: 11px; color: #94a3b8; margin-top: 10px; }
+
+/* JOURNAL ENTRY SCREEN */
+.journal-body { flex: 1; overflow-y: auto; padding: 20px 22px 28px; }
+.date-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.date-label { font-size: 13px; font-weight: 700; color: #1B3A6B; }
+.date-sub { font-size: 11px; color: #94a3b8; }
+
+/* PAST SECTION */
+.past-section { background: white; border-radius: 14px; margin-bottom: 12px; overflow: hidden; }
+.past-sec-header { padding: 14px 16px 12px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #f8fafc; }
+.past-sec-badge { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 900; flex-shrink: 0; }
+.past-sec-badge.P { background: #dbeafe; color: #1e40af; }
+.past-sec-badge.A { background: #FDF0F5; color: #9B2551; }
+.past-sec-badge.S { background: #EEF3FB; color: #1B3A6B; }
+.past-sec-badge.T { background: #ede9fe; color: #5b21b6; }
+.past-sec-title { font-size: 13px; font-weight: 800; color: #1B3A6B; }
+.past-sec-sub { font-size: 11px; color: #94a3b8; margin-left: auto; }
+.past-sec-body { padding: 14px 16px 16px; }
+.prompt-label { font-size: 11px; font-weight: 700; color: #1B3A6B; margin-bottom: 6px; }
+.prompt-hint { font-size: 10px; color: #94a3b8; margin-bottom: 10px; line-height: 1.4; }
+textarea {
+  width: 100%;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 14px;
+  color: #1B3A6B;
+  font-family: inherit;
+  resize: none;
+  line-height: 1.6;
+  background: #fafbfc;
+  transition: border-color 0.15s;
+  -webkit-appearance: none;
+}
+textarea:focus { outline: none; border-color: #1B3A6B; background: white; }
+textarea::placeholder { color: #94a3b8; }
+
+/* RATING ROW */
+.rating-row { display: flex; gap: 6px; margin-top: 12px; justify-content: space-between; }
+.mini-rate { flex: 1; height: 40px; border-radius: 8px; border: 1.5px solid #e2e8f0; background: white; font-size: 14px; font-weight: 700; color: #94a3b8; cursor: pointer; display: flex; align-items: center; justify-content: center; -webkit-tap-highlight-color: transparent; transition: all 0.12s; }
+.mini-rate:active { transform: scale(0.93); }
+.mini-rate.sel-P { background: #2563EB; color: white; border-color: #2563EB; }
+.mini-rate.sel-A { background: #E8799A; color: white; border-color: #E8799A; }
+.mini-rate.sel-S { background: #1B3A6B; color: white; border-color: #1B3A6B; }
+.mini-rate.sel-T { background: #6366f1; color: white; border-color: #6366f1; }
+.rate-labels { display: flex; justify-content: space-between; font-size: 10px; color: #94a3b8; margin-top: 4px; padding: 0 2px; }
+
+/* OVERALL MOOD */
+.mood-section { background: white; border-radius: 14px; padding: 16px; margin-bottom: 12px; }
+.mood-title { font-size: 13px; font-weight: 800; color: #1B3A6B; margin-bottom: 14px; }
+.mood-options { display: flex; gap: 8px; }
+.mood-btn { flex: 1; border-radius: 12px; padding: 12px 8px; border: 1.5px solid #e2e8f0; background: white; cursor: pointer; text-align: center; transition: all 0.15s; -webkit-tap-highlight-color: transparent; }
+.mood-btn:active { transform: scale(0.95); }
+.mood-btn.selected { border-color: #1B3A6B; background: #EEF3FB; }
+.mood-emoji { font-size: 22px; display: block; margin-bottom: 4px; }
+.mood-label { font-size: 10px; color: #64748b; font-weight: 600; }
+.mood-btn.selected .mood-label { color: #1B3A6B; }
+
+/* TOMORROW */
+.tomorrow-section { background: white; border-radius: 14px; padding: 16px; margin-bottom: 16px; }
+.tomorrow-title { font-size: 13px; font-weight: 800; color: #1B3A6B; margin-bottom: 6px; }
+.tomorrow-hint { font-size: 11px; color: #94a3b8; margin-bottom: 10px; line-height: 1.4; }
+
+/* SUBMIT */
+.submit-btn { width: 100%; padding: 18px; background: #E8799A; color: white; border: none; border-radius: 16px; font-size: 16px; font-weight: 800; cursor: pointer; }
+.submit-btn:active { background: #d4637f; transform: scale(0.98); }
+
+/* DONE SCREEN */
+.done-body { flex: 1; padding: 28px 22px 40px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+.done-emoji { font-size: 56px; margin: 28px 0 18px; }
+.done-title { font-size: 24px; font-weight: 900; color: #1B3A6B; margin-bottom: 10px; }
+.done-sub { font-size: 14px; color: #64748b; line-height: 1.6; margin-bottom: 28px; max-width: 320px; }
+.done-scores { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; width: 100%; margin-bottom: 28px; }
+.done-score { border-radius: 12px; padding: 14px 8px; text-align: center; }
+.done-score.P { background: #dbeafe; }
+.done-score.A { background: #FDF0F5; }
+.done-score.S { background: #EEF3FB; }
+.done-score.T { background: #ede9fe; }
+.done-score-val { font-size: 26px; font-weight: 900; }
+.done-score-val.P { color: #2563EB; }
+.done-score-val.A { color: #E8799A; }
+.done-score-val.S { color: #1B3A6B; }
+.done-score-val.T { color: #6366f1; }
+.done-score-lbl { font-size: 10px; font-weight: 700; color: #64748b; margin-top: 3px; }
+.insight-box { background: #1B3A6B; border-radius: 14px; padding: 18px; width: 100%; margin-bottom: 16px; text-align: left; }
+.insight-lbl { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,255,255,0.5); margin-bottom: 6px; }
+.insight-text { font-size: 13px; color: rgba(255,255,255,0.9); line-height: 1.6; }
+.done-note { font-size: 11px; color: #94a3b8; line-height: 1.6; }
+.safe-bottom { height: env(safe-area-inset-bottom, 16px); }
+
+/* HISTORY SCREEN */
+.history-body { flex: 1; padding: 18px 22px; overflow-y: auto; }
+.history-item { background: white; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; cursor: pointer; }
+.history-item:active { background: #f8fafc; }
+.history-date { font-size: 11px; font-weight: 700; color: #94a3b8; margin-bottom: 6px; }
+.history-scores { display: flex; gap: 8px; }
+.h-score { display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 700; }
+.h-dot { width: 8px; height: 8px; border-radius: 50%; }
+.history-preview { font-size: 11px; color: #64748b; margin-top: 6px; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+</style>
+</head>
+<body>
+
+<!-- LANDING SCREEN -->
+<div class="screen active" id="screen-landing">
+  <div class="hdr">
+    <div class="hdr-logo">
+      <svg width="40" height="13" viewBox="0 819.5 69 23" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <clipPath id="sg" clipPathUnits="userSpaceOnUse">
+            <path fill-rule="evenodd" transform="matrix(.1,0,0,-.1,0,842)" d="M646.547 98.4414C643.547 38.0781 623.801 19.2539 561.828 17.9023 552.719 17.7109 543.598 17.9023 534.535 17.9023 433.449 17.7578 414.105 33.1094 394.055 129.27 386.703 164.426 394.34 180.371 429.953 190.047 473.539 203.105 519.477 206.277 564.438 199.348 645.668 185.207 650.551 181.391 646.555 98.4414H646.547ZM295.336 129.27C275.336 33.1094 255.953 17.7578 154.855 17.9023 145.785 17.9023 136.68 17.7109 127.566 17.9023 65.5664 19.2539 45.7734 38.0781 42.8438 98.4414 38.8477 181.438 43.7305 185.207 124.969 199.348 169.91 206.277 215.832 203.105 259.398 190.047 295.059 180.371 302.688 164.418 295.336 129.27ZM668.832 199.109C652.98 203.23 636.898 206.32 620.656 208.367 546.984 220.477 471.645 217.855 398.988 200.648 363.031 194.816 326.363 194.816 290.406 200.648 217.742 217.855 142.387 220.477 68.6953 208.367 52.4688 206.316 36.3945 203.227 20.5664 199.109 3.77734 194.23-6.26172 177.352 4.38672 165.539 31.8164 135.227 22.8984 96.6797 33.4961 62.9258 39.5547 39.7227 56.3867 20.8516 78.7383 12.1914 132.445-8.60156 186.527 .00390625 239.156 17.1211 279.797 30.3242 295.047 66.5469 309.156 102.727 311.348 107.738 313.91 112.57 316.824 117.191 325.477 131.934 334.828 139.559 344.637 140.109 354.496 139.551 363.852 131.934 372.484 117.191 375.402 112.57 377.973 107.738 380.16 102.727 394.301 66.5469 409.543 30.3242 450.16 17.1211 502.797 .015625 556.879-8.60156 610.578 12.1914 632.934 20.8516 649.758 39.7227 655.813 62.9258 666.379 96.6797 657.484 135.227 684.926 165.539 695.656 177.352 685.617 194.23 668.832 199.109Z"/>
+          </clipPath>
+        </defs>
+        <rect x="0" y="819" width="35" height="24" fill="#1B3A6B" clip-path="url(#sg)"/>
+        <rect x="34" y="819" width="36" height="24" fill="#E8799A" clip-path="url(#sg)"/>
+      </svg>
+      <div class="hdr-wordmark">well<span>founded</span></div>
+    </div>
+    <div class="hdr-right" onclick="showScreen('history')" style="cursor:pointer;color:#1B3A6B;font-weight:600;">History →</div>
+  </div>
+
+  <div class="landing-body">
+    <div class="landing-pill">PAST Journal · Daily practice</div>
+    <div class="landing-title">Five minutes.<br>Four questions.<br>A better tomorrow.</div>
+    <div class="landing-sub">Based on Professor Paul Dolan's research, noticing moments of Pleasure, Achievement, Significance and Togetherness each day builds your awareness of what actually makes work feel good - and helps you do more of it.</div>
+
+    <div class="past-chips">
+      <div class="past-chip P">
+        <div class="chip-letter P">P · Pleasure</div>
+        <div class="chip-name">What felt good?</div>
+        <div class="chip-prompt">"What moment did you actually enjoy today?"</div>
+      </div>
+      <div class="past-chip A">
+        <div class="chip-letter A">A · Achievement</div>
+        <div class="chip-name">What moved?</div>
+        <div class="chip-prompt">"What did you make real progress on?"</div>
+      </div>
+      <div class="past-chip S">
+        <div class="chip-letter S">S · Significance</div>
+        <div class="chip-name">What mattered?</div>
+        <div class="chip-prompt">"What felt meaningful - even briefly?"</div>
+      </div>
+      <div class="past-chip T">
+        <div class="chip-letter T">T · Togetherness</div>
+        <div class="chip-name">Who mattered?</div>
+        <div class="chip-prompt">"Which connection felt real today?"</div>
+      </div>
+    </div>
+
+    <button class="start-btn" onclick="startJournal()">Start today's entry →</button>
+    <div class="time-note">~5 minutes · best done on the commute home</div>
+  </div>
+  <div class="safe-bottom"></div>
+</div>
+
+<!-- JOURNAL ENTRY SCREEN -->
+<div class="screen" id="screen-journal">
+  <div class="hdr">
+    <div class="hdr-back" onclick="showScreen('landing')">← Back</div>
+    <div class="hdr-wordmark">well<span>founded</span></div>
+    <div class="hdr-right" id="journal-date-hdr"></div>
+  </div>
+
+  <div class="journal-body">
+    <div class="date-bar">
+      <div>
+        <div class="date-label" id="journal-date-full"></div>
+        <div class="date-sub">End of day reflection</div>
+      </div>
+    </div>
+
+    <!-- PLEASURE -->
+    <div class="past-section">
+      <div class="past-sec-header">
+        <div class="past-sec-badge P">P</div>
+        <div>
+          <div class="past-sec-title">Pleasure</div>
+        </div>
+        <div class="past-sec-sub">Day-to-day experience</div>
+      </div>
+      <div class="past-sec-body">
+        <div class="prompt-label">What moment did you genuinely enjoy today?</div>
+        <div class="prompt-hint">Even something small counts - a good conversation, a task you got absorbed in, a moment of calm. Don't overthink it.</div>
+        <textarea id="p-text" rows="3" placeholder="A specific moment, not a general feeling..."></textarea>
+        <div class="prompt-label" style="margin-top:14px;">How did today feel overall? (Pleasure)</div>
+        <div class="rating-row" id="p-rating"></div>
+        <div class="rate-labels"><span>Not at all</span><span>Completely</span></div>
+      </div>
+    </div>
+
+    <!-- ACHIEVEMENT -->
+    <div class="past-section">
+      <div class="past-sec-header">
+        <div class="past-sec-badge A">A</div>
+        <div>
+          <div class="past-sec-title">Achievement</div>
+        </div>
+        <div class="past-sec-sub">Progress & growth</div>
+      </div>
+      <div class="past-sec-body">
+        <div class="prompt-label">What did you make real progress on today?</div>
+        <div class="prompt-hint">Not just staying busy - something that actually moved. Even finishing a small thing properly counts.</div>
+        <textarea id="a-text" rows="3" placeholder="Something you actually completed or moved forward..."></textarea>
+        <div class="prompt-label" style="margin-top:14px;">How much did you achieve today? (Achievement)</div>
+        <div class="rating-row" id="a-rating"></div>
+        <div class="rate-labels"><span>Not at all</span><span>Completely</span></div>
+      </div>
+    </div>
+
+    <!-- SIGNIFICANCE -->
+    <div class="past-section">
+      <div class="past-sec-header">
+        <div class="past-sec-badge S">S</div>
+        <div>
+          <div class="past-sec-title">Significance</div>
+        </div>
+        <div class="past-sec-sub">Meaning & purpose</div>
+      </div>
+      <div class="past-sec-body">
+        <div class="prompt-label">What felt meaningful today - even briefly?</div>
+        <div class="prompt-hint">A moment when your work felt like it mattered. Or honestly - did anything feel pointless? Both are worth noting.</div>
+        <textarea id="s-text" rows="3" placeholder="A moment of meaning, or a moment of pointlessness..."></textarea>
+        <div class="prompt-label" style="margin-top:14px;">How meaningful did today feel? (Significance)</div>
+        <div class="rating-row" id="s-rating"></div>
+        <div class="rate-labels"><span>Not at all</span><span>Completely</span></div>
+      </div>
+    </div>
+
+    <!-- TOGETHERNESS -->
+    <div class="past-section">
+      <div class="past-sec-header">
+        <div class="past-sec-badge T">T</div>
+        <div>
+          <div class="past-sec-title">Togetherness</div>
+        </div>
+        <div class="past-sec-sub">Connection & belonging</div>
+      </div>
+      <div class="past-sec-body">
+        <div class="prompt-label">Which connection felt real today?</div>
+        <div class="prompt-hint">Not just being around people - a moment of genuine warmth, understanding or care. Or - did you feel lonely today? That's worth noting too.</div>
+        <textarea id="t-text" rows="3" placeholder="A genuine connection, or a moment of loneliness..."></textarea>
+        <div class="prompt-label" style="margin-top:14px;">How connected did you feel today? (Togetherness)</div>
+        <div class="rating-row" id="t-rating"></div>
+        <div class="rate-labels"><span>Not at all</span><span>Completely</span></div>
+      </div>
+    </div>
+
+    <!-- OVERALL MOOD -->
+    <div class="mood-section">
+      <div class="mood-title">Overall - how was today?</div>
+      <div class="mood-options">
+        <button class="mood-btn" onclick="selectMood(this,'rough')"><span class="mood-emoji">😔</span><span class="mood-label">Rough</span></button>
+        <button class="mood-btn" onclick="selectMood(this,'ok')"><span class="mood-emoji">😐</span><span class="mood-label">OK</span></button>
+        <button class="mood-btn" onclick="selectMood(this,'decent')"><span class="mood-emoji">🙂</span><span class="mood-label">Decent</span></button>
+        <button class="mood-btn" onclick="selectMood(this,'good')"><span class="mood-emoji">😊</span><span class="mood-label">Good</span></button>
+        <button class="mood-btn" onclick="selectMood(this,'great')"><span class="mood-emoji">🌟</span><span class="mood-label">Great</span></button>
+      </div>
+    </div>
+
+    <!-- TOMORROW -->
+    <div class="tomorrow-section">
+      <div class="tomorrow-title">One thing for tomorrow</div>
+      <div class="tomorrow-hint">Based on today, what's one small thing you could do tomorrow to make it even slightly better? Keep it tiny and specific.</div>
+      <textarea id="tomorrow-text" rows="2" placeholder="Something small and doable..."></textarea>
+    </div>
+
+    <button class="submit-btn" onclick="submitJournal()">Save today's entry →</button>
+  </div>
+  <div class="safe-bottom"></div>
+</div>
+
+<!-- DONE SCREEN -->
+<div class="screen" id="screen-done">
+  <div class="hdr">
+    <div class="hdr-back" onclick="showScreen('landing')">← Home</div>
+    <div class="hdr-wordmark">well<span>founded</span></div>
+    <div class="hdr-right"></div>
+  </div>
+  <div class="done-body">
+    <div class="done-emoji" id="done-emoji">✍️</div>
+    <div class="done-title" id="done-title">Entry saved</div>
+    <div class="done-sub" id="done-sub">Your reflection has been saved. Patterns across your entries build into your weekly scores.</div>
+    <div class="done-scores" id="done-scores"></div>
+    <div class="insight-box">
+      <div class="insight-lbl">Today's insight</div>
+      <div class="insight-text" id="done-insight">Keep going — daily noticing is what shifts how your work feels over time.</div>
+    </div>
+    <div class="done-note">Your journal entries are private to you. They feed into your weekly check-in trends but are never shared individually.</div>
+  </div>
+  <div class="safe-bottom"></div>
+</div>
+
+<!-- HISTORY SCREEN -->
+<div class="screen" id="screen-history">
+  <div class="hdr">
+    <div class="hdr-back" onclick="showScreen('landing')">← Back</div>
+    <div class="hdr-wordmark">well<span>founded</span></div>
+    <div class="hdr-right"></div>
+  </div>
+  <div class="history-body">
+    <div style="font-size:16px;font-weight:800;color:#1B3A6B;margin-bottom:16px;">Your journal history</div>
+    <div id="history-list"></div>
+  </div>
+  <div class="safe-bottom"></div>
+</div>
+
+<script>
+// ── STATE ─────────────────────────────────────────────────────
+const ratings = { P: null, A: null, S: null, T: null };
+let selectedMood = null;
+const dimColors = { P: '#2563EB', A: '#E8799A', S: '#1B3A6B', T: '#6366f1' };
+const dimNames = { P: 'Pleasure', A: 'Achievement', S: 'Significance', T: 'Togetherness' };
+
+// Sample history entries
+const history = [
+  { date: 'Wed 4 Jun', scores: {P:7,A:8,S:5,T:7}, mood:'good', preview:'Got absorbed in the data model. Had a good coffee with James.' },
+  { date: 'Tue 3 Jun', scores: {P:5,A:6,S:4,T:6}, mood:'decent', preview:'Lots of meetings. Not much to show for it. Called Mum.' },
+  { date: 'Mon 2 Jun', scores: {P:8,A:7,S:6,T:8}, mood:'great', preview:'Good kick-off session. Felt like the work actually matters.' },
+  { date: 'Fri 30 May', scores: {P:6,A:5,S:3,T:5}, mood:'ok', preview:'End of week drag. Unclear what I achieved. Felt a bit lonely.' },
+  { date: 'Thu 29 May', scores: {P:7,A:9,S:7,T:6}, mood:'good', preview:'Finished the report. Real sense of completion. Good feedback.' },
+];
+
+// ── SCREENS ───────────────────────────────────────────────────
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// ── JOURNAL SETUP ─────────────────────────────────────────────
+function startJournal() {
+  const now = new Date();
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const dateStr = `${days[now.getDay()]} ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+  const shortDate = `${now.getDate()} ${months[now.getMonth()]}`;
+  document.getElementById('journal-date-full').textContent = dateStr;
+  document.getElementById('journal-date-hdr').textContent = shortDate;
+
+  // Build rating rows
+  ['P','A','S','T'].forEach(dim => {
+    const row = document.getElementById(dim.toLowerCase() + '-rating');
+    row.innerHTML = '';
+    for (let i = 1; i <= 10; i++) {
+      const btn = document.createElement('button');
+      btn.className = 'mini-rate';
+      btn.textContent = i;
+      btn.onclick = () => setRating(dim, i, btn);
+      row.appendChild(btn);
+    }
+  });
+
+  // Reset state
+  ratings.P = null; ratings.A = null; ratings.S = null; ratings.T = null;
+  selectedMood = null;
+  ['p-text','a-text','s-text','t-text','tomorrow-text'].forEach(id => { document.getElementById(id).value = ''; });
+  document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+
+  showScreen('journal');
+}
+
+function setRating(dim, val, btn) {
+  ratings[dim] = val;
+  const row = document.getElementById(dim.toLowerCase() + '-rating');
+  row.querySelectorAll('.mini-rate').forEach(b => b.classList.remove(`sel-${dim}`));
+  btn.classList.add(`sel-${dim}`);
+}
+
+function selectMood(btn, val) {
+  selectedMood = val;
+  document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+function submitJournal() {
+  // Generate insight based on lowest score
+  const scores = ratings;
+  const filled = Object.values(scores).filter(v => v !== null);
+  const avg = filled.length ? Math.round(filled.reduce((a,b)=>a+b,0)/filled.length) : 6;
+  const lowest = ['P','A','S','T'].reduce((a,b) => (scores[a]||10) < (scores[b]||10) ? a : b);
+  const insights = {
+    P: 'Your Pleasure score is on the lower side today. Notice what drained you - often it\'s one repeated thing that\'s fixable.',
+    A: 'Achievement feels thin today. Try to identify one small thing tomorrow that you can finish completely.',
+    S: 'Significance is your low point today. Your tomorrow intention is the right place to focus - make it about something that matters to someone.',
+    T: 'Togetherness is low. Consider whether tomorrow you could reach out to one person just to say something genuine.',
+  };
+
+  // Populate done screen
+  const emojis = { rough:'😔', ok:'😐', decent:'🙂', good:'😊', great:'🌟' };
+  const titles = { rough:'Hard day, honestly noted', ok:'OK day, honestly logged', decent:'Decent day, well reflected', good:'Good day, properly captured', great:'Great day, worth remembering' };
+  document.getElementById('done-emoji').textContent = emojis[selectedMood] || '✍️';
+  document.getElementById('done-title').textContent = selectedMood ? titles[selectedMood] : 'Entry saved';
+  document.getElementById('done-insight').textContent = insights[lowest];
+
+  const scoreContainer = document.getElementById('done-scores');
+  scoreContainer.innerHTML = '';
+  ['P','A','S','T'].forEach(d => {
+    const s = scores[d] !== null ? scores[d] * 10 : '–';
+    const col = typeof s === 'number' ? (s>=70?'#10b981':s>=50?'#f59e0b':'#ef4444') : '#94a3b8';
+    scoreContainer.innerHTML += `<div class="done-score ${d}"><div class="done-score-val ${d}" style="${typeof s==='number'?`color:${col}`:''}">${s}</div><div class="done-score-lbl">${dimNames[d]}</div></div>`;
+  });
+
+  showScreen('done');
+}
+
+// ── HISTORY ───────────────────────────────────────────────────
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  window.scrollTo(0, 0);
+  if (name === 'history') renderHistory();
+}
+
+function renderHistory() {
+  const list = document.getElementById('history-list');
+  list.innerHTML = '';
+  history.forEach(entry => {
+    const scoreHtml = ['P','A','S','T'].map(d =>
+      `<div class="h-score"><div class="h-dot" style="background:${dimColors[d]};"></div>${entry.scores[d] * 10}</div>`
+    ).join('');
+    const moodEmojis = {rough:'😔',ok:'😐',decent:'🙂',good:'😊',great:'🌟'};
+    list.innerHTML += `
+      <div class="history-item">
+        <div class="history-date">${entry.date} · ${moodEmojis[entry.mood] || ''}</div>
+        <div class="history-scores">${scoreHtml}</div>
+        <div class="history-preview">${entry.preview}</div>
+      </div>`;
+  });
+}
+</script>
+</body>
+</html>

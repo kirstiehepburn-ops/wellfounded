@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Wellfounded</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #F0F4FA;
+  color: #1B3A6B;
+  font-size: 16px;
+  display: flex;
+  flex-direction: column;
+  max-width: 480px;
+  margin: 0 auto;
+  height: 100vh;
+  position: relative;
+}
+
+/* SCREEN SYSTEM */
+.screen { display: none; flex-direction: column; height: 100vh; overflow-y: auto; }
+.screen.active { display: flex; }
+
+/* HEADER */
+.header { padding: 20px 24px 16px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+.logo-mark { display: flex; align-items: center; gap: 8px; }
+.logo-text { font-size: 16px; font-weight: 800; color: #1B3A6B; }
+.logo-text span { color: #E8799A; }
+.header-meta { font-size: 11px; color: #94a3b8; }
+
+/* PROGRESS BAR */
+.progress-wrap { padding: 0 24px; flex-shrink: 0; }
+.progress-track { height: 4px; background: #e2e8f0; border-radius: 2px; }
+.progress-fill { height: 4px; border-radius: 2px; background: linear-gradient(90deg, #1B3A6B, #E8799A); transition: width 0.4s ease; }
+.progress-labels { display: flex; justify-content: space-between; margin-top: 6px; font-size: 11px; color: #94a3b8; }
+
+/* QUESTION SCREEN */
+.q-body { flex: 1; padding: 28px 24px 20px; display: flex; flex-direction: column; }
+.q-mode-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; border-radius: 20px; padding: 5px 12px; margin-bottom: 20px; align-self: flex-start; }
+.q-mode-badge.weekly { background: #FDF0F5; color: #9B2551; }
+.q-mode-badge.full { background: #EEF3FB; color: #1B3A6B; }
+.q-mode-badge.P { background: #dbeafe; color: #1e40af; }
+.q-mode-badge.A { background: #FDF0F5; color: #9B2551; }
+.q-mode-badge.S { background: #EEF3FB; color: #1B3A6B; }
+.q-mode-badge.T { background: #ede9fe; color: #5b21b6; }
+.q-mode-badge.O { background: #f0fdf4; color: #166534; }
+.q-text { font-size: 22px; font-weight: 800; color: #1B3A6B; line-height: 1.35; margin-bottom: 12px; }
+.q-hint { font-size: 13px; color: #94a3b8; line-height: 1.5; margin-bottom: 32px; }
+
+/* RATING GRID - large tap targets */
+.rating-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 16px; }
+.rating-btn {
+  height: 60px;
+  border-radius: 14px;
+  border: 2px solid #e2e8f0;
+  background: white;
+  font-size: 20px;
+  font-weight: 800;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+}
+.rating-btn:active { transform: scale(0.95); }
+.rating-btn.selected { color: white; border-color: transparent; transform: scale(1.05); }
+.rating-btn.sel-P { background: #2563EB; border-color: #2563EB; }
+.rating-btn.sel-A { background: #E8799A; border-color: #E8799A; }
+.rating-btn.sel-S { background: #1B3A6B; border-color: #1B3A6B; }
+.rating-btn.sel-T { background: #6366f1; border-color: #6366f1; }
+.rating-btn.sel-O { background: #10b981; border-color: #10b981; }
+.rating-btn.sel-W { background: #1B3A6B; border-color: #1B3A6B; }
+.rating-labels { display: flex; justify-content: space-between; font-size: 11px; color: #94a3b8; padding: 0 4px; }
+
+/* NEXT BUTTON */
+.next-btn {
+  margin-top: auto;
+  width: 100%;
+  padding: 18px;
+  border-radius: 16px;
+  border: none;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  letter-spacing: 0.3px;
+  transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.next-btn.disabled { background: #e2e8f0; color: #94a3b8; pointer-events: none; }
+.next-btn.enabled { background: #1B3A6B; color: white; }
+.next-btn.enabled:active { background: #14305a; transform: scale(0.98); }
+.next-btn.pink { background: #E8799A; color: white; }
+.next-btn.pink:active { background: #d4637f; }
+
+/* WELCOME SCREEN */
+.welcome-body { flex: 1; padding: 28px 24px; display: flex; flex-direction: column; }
+.welcome-glasses { text-align: center; margin: 20px 0 24px; }
+.welcome-title { font-size: 26px; font-weight: 900; color: #1B3A6B; margin-bottom: 10px; line-height: 1.2; }
+.welcome-sub { font-size: 14px; color: #64748b; line-height: 1.6; margin-bottom: 28px; }
+.mode-choice { display: flex; flex-direction: column; gap: 12px; margin-bottom: 28px; }
+.mode-card { background: white; border-radius: 16px; padding: 18px 20px; border: 2px solid #e2e8f0; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 14px; }
+.mode-card:active { transform: scale(0.98); }
+.mode-card.selected { border-color: #1B3A6B; background: #EEF3FB; }
+.mode-card.selected.pink { border-color: #E8799A; background: #FDF0F5; }
+.mode-icon { font-size: 28px; flex-shrink: 0; }
+.mode-body { flex: 1; }
+.mode-title { font-size: 15px; font-weight: 800; color: #1B3A6B; }
+.mode-desc { font-size: 12px; color: #64748b; margin-top: 3px; line-height: 1.4; }
+.mode-time { font-size: 11px; font-weight: 700; color: #94a3b8; margin-top: 4px; }
+.mode-card.selected .mode-title { color: #1B3A6B; }
+.mode-card.selected.pink .mode-title { color: #9B2551; }
+.privacy-note { background: #f8fafc; border-radius: 12px; padding: 14px; font-size: 12px; color: #64748b; line-height: 1.5; text-align: center; }
+.privacy-note strong { color: #1B3A6B; }
+
+/* RESULTS SCREEN */
+.results-body { flex: 1; padding: 20px 24px; overflow-y: auto; }
+.results-header { text-align: center; padding: 20px 0 24px; }
+.results-emoji { font-size: 52px; margin-bottom: 12px; }
+.results-title { font-size: 24px; font-weight: 900; color: #1B3A6B; margin-bottom: 8px; }
+.results-sub { font-size: 13px; color: #64748b; line-height: 1.6; }
+.score-card { background: white; border-radius: 16px; padding: 18px 20px; margin-bottom: 10px; display: flex; align-items: center; gap: 14px; }
+.score-bar-wrap { flex: 1; height: 10px; background: #f1f5f9; border-radius: 5px; }
+.score-bar-fill { height: 10px; border-radius: 5px; }
+.score-dim { width: 90px; flex-shrink: 0; }
+.score-dim-letter { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; }
+.score-dim-name { font-size: 13px; font-weight: 700; color: #1B3A6B; }
+.score-val { font-size: 20px; font-weight: 900; width: 38px; text-align: right; flex-shrink: 0; }
+.insight-card { background: #1B3A6B; border-radius: 16px; padding: 18px 20px; margin-bottom: 10px; color: white; }
+.insight-label { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,255,255,0.5); margin-bottom: 6px; }
+.insight-text { font-size: 14px; line-height: 1.6; color: rgba(255,255,255,0.9); }
+.cta-card { background: #E8799A; border-radius: 16px; padding: 18px 20px; margin-bottom: 10px; color: white; cursor: pointer; }
+.cta-card-title { font-size: 15px; font-weight: 800; margin-bottom: 6px; }
+.cta-card-sub { font-size: 12px; color: rgba(255,255,255,0.8); line-height: 1.5; }
+.cta-arrow { float: right; font-size: 18px; margin-top: -24px; }
+
+/* WEEKLY DONE SCREEN */
+.weekly-result { background: white; border-radius: 16px; padding: 20px; margin-bottom: 12px; }
+.weekly-score-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
+.weekly-score-row:last-child { border-bottom: none; }
+.ws-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+.ws-label { flex: 1; font-size: 13px; font-weight: 600; color: #1B3A6B; }
+.ws-score { font-size: 16px; font-weight: 800; }
+.ws-change { font-size: 11px; margin-left: 4px; }
+.trend-up { color: #10b981; }
+.trend-dn { color: #ef4444; }
+.trend-nt { color: #94a3b8; }
+
+/* SAFE AREA */
+.safe-bottom { height: env(safe-area-inset-bottom, 0px); flex-shrink: 0; }
+
+/* TRANSITION */
+.screen { animation: none; }
+.screen.slide-in { animation: slideIn 0.25s ease forwards; }
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+</style>
+</head>
+<body>
+
+<!-- WELCOME SCREEN -->
+<div class="screen active" id="screen-welcome">
+
+  <!-- Define the glasses clipPath once, reused via use -->
+  <svg width="0" height="0" style="position:absolute;">
+    <defs>
+      <clipPath id="sg" clipPathUnits="userSpaceOnUse">
+        <path fill-rule="evenodd" transform="matrix(.1,0,0,-.1,0,842)"
+          d="M646.547 98.4414C643.547 38.0781 623.801 19.2539 561.828 17.9023 552.719 17.7109 543.598 17.9023 534.535 17.9023 433.449 17.7578 414.105 33.1094 394.055 129.27 386.703 164.426 394.34 180.371 429.953 190.047 473.539 203.105 519.477 206.277 564.438 199.348 645.668 185.207 650.551 181.391 646.555 98.4414H646.547Z
+          M295.336 129.27C275.336 33.1094 255.953 17.7578 154.855 17.9023 145.785 17.9023 136.68 17.7109 127.566 17.9023 65.5664 19.2539 45.7734 38.0781 42.8438 98.4414 38.8477 181.438 43.7305 185.207 124.969 199.348 169.91 206.277 215.832 203.105 259.398 190.047 295.059 180.371 302.688 164.418 295.336 129.27Z
+          M668.832 199.109C652.98 203.23 636.898 206.32 620.656 208.367 546.984 220.477 471.645 217.855 398.988 200.648 363.031 194.816 326.363 194.816 290.406 200.648 217.742 217.855 142.387 220.477 68.6953 208.367 52.4688 206.316 36.3945 203.227 20.5664 199.109 3.77734 194.23-6.26172 177.352 4.38672 165.539 31.8164 135.227 22.8984 96.6797 33.4961 62.9258 39.5547 39.7227 56.3867 20.8516 78.7383 12.1914 132.445-8.60156 186.527 .00390625 239.156 17.1211 279.797 30.3242 295.047 66.5469 309.156 102.727 311.348 107.738 313.91 112.57 316.824 117.191 325.477 131.934 334.828 139.559 344.637 140.109 354.496 139.551 363.852 131.934 372.484 117.191 375.402 112.57 377.973 107.738 380.16 102.727 394.301 66.5469 409.543 30.3242 450.16 17.1211 502.797 .015625 556.879-8.60156 610.578 12.1914 632.934 20.8516 649.758 39.7227 655.813 62.9258 666.379 96.6797 657.484 135.227 684.926 165.539 695.656 177.352 685.617 194.23 668.832 199.109Z"/>
+      </clipPath>
+    </defs>
+  </svg>
+
+  <div class="welcome-body" style="padding-top:48px;">
+    <!-- Prominent centred logo -->
+    <div style="text-align:center;margin-bottom:28px;">
+      <svg width="90" height="30" viewBox="0 819.5 69 23" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0 auto 10px;">
+        <rect x="0" y="819" width="35" height="24" fill="#1B3A6B" clip-path="url(#sg)"/>
+        <rect x="34" y="819" width="36" height="24" fill="#E8799A" clip-path="url(#sg)"/>
+      </svg>
+      <div style="font-size:20px;font-weight:800;color:#1B3A6B;letter-spacing:-0.5px;">well<span style="color:#E8799A;">founded</span></div>
+      <div style="font-size:11px;color:#94a3b8;margin-top:3px;">Vantara Group</div>
+    </div>
+    <div class="welcome-title">Hi Sarah,<br>how are you doing?</div>
+    <div class="welcome-sub">Choose how much time you have. Your answers are completely confidential - Vantara only ever sees anonymised group data.</div>
+
+    <div class="mode-choice">
+      <div class="mode-card selected pink" id="mode-weekly" onclick="selectMode('weekly')">
+        <div class="mode-icon">⚡</div>
+        <div class="mode-body">
+          <div class="mode-title">Weekly check-in</div>
+          <div class="mode-desc">5 quick questions across all four dimensions. See how this week compares to your usual.</div>
+          <div class="mode-time">~2 minutes</div>
+        </div>
+      </div>
+      <div class="mode-card" id="mode-full" onclick="selectMode('full')">
+        <div class="mode-icon">🔍</div>
+        <div class="mode-body">
+          <div class="mode-title">Full diagnostic</div>
+          <div class="mode-desc">40 questions covering all dimensions in depth. Detailed personal scores and recommendations.</div>
+          <div class="mode-time">~8 minutes · Annual</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="privacy-note">🔒 <strong>Your answers are private.</strong> Only anonymised group scores (min. 5 people) are ever shared with your employer. Wellfounded cannot identify individual responses.</div>
+
+    <button class="next-btn enabled" style="margin-top:20px;" onclick="startSurvey()">Start →</button>
+  </div>
+  <div class="safe-bottom"></div>
+</div>
+
+<!-- QUESTION SCREEN -->
+<div class="screen" id="screen-question">
+  <div class="header">
+    <div class="logo-mark">
+      <svg width="40" height="13" viewBox="0 819.5 69 23" xmlns="http://www.w3.org/2000/svg">
+        <defs><clipPath id="sg2" clipPathUnits="userSpaceOnUse"><path fill-rule="evenodd" transform="matrix(.1,0,0,-.1,0,842)" d="M646.547 98.4414C643.547 38.0781 623.801 19.2539 561.828 17.9023 552.719 17.7109 543.598 17.9023 534.535 17.9023 433.449 17.7578 414.105 33.1094 394.055 129.27 386.703 164.426 394.34 180.371 429.953 190.047 473.539 203.105 519.477 206.277 564.438 199.348 645.668 185.207 650.551 181.391 646.555 98.4414H646.547ZM295.336 129.27C275.336 33.1094 255.953 17.7578 154.855 17.9023 145.785 17.9023 136.68 17.7109 127.566 17.9023 65.5664 19.2539 45.7734 38.0781 42.8438 98.4414 38.8477 181.438 43.7305 185.207 124.969 199.348 169.91 206.277 215.832 203.105 259.398 190.047 295.059 180.371 302.688 164.418 295.336 129.27ZM668.832 199.109C652.98 203.23 636.898 206.32 620.656 208.367 546.984 220.477 471.645 217.855 398.988 200.648 363.031 194.816 326.363 194.816 290.406 200.648 217.742 217.855 142.387 220.477 68.6953 208.367 52.4688 206.316 36.3945 203.227 20.5664 199.109 3.77734 194.23-6.26172 177.352 4.38672 165.539 31.8164 135.227 22.8984 96.6797 33.4961 62.9258 39.5547 39.7227 56.3867 20.8516 78.7383 12.1914 132.445-8.60156 186.527 .00390625 239.156 17.1211 279.797 30.3242 295.047 66.5469 309.156 102.727 311.348 107.738 313.91 112.57 316.824 117.191 325.477 131.934 334.828 139.559 344.637 140.109 354.496 139.551 363.852 131.934 372.484 117.191 375.402 112.57 377.973 107.738 380.16 102.727 394.301 66.5469 409.543 30.3242 450.16 17.1211 502.797 .015625 556.879-8.60156 610.578 12.1914 632.934 20.8516 649.758 39.7227 655.813 62.9258 666.379 96.6797 657.484 135.227 684.926 165.539 695.656 177.352 685.617 194.23 668.832 199.109Z"/></clipPath></defs>
+        <rect x="0" y="819" width="35" height="24" fill="#1B3A6B" clip-path="url(#sg2)"/>
+        <rect x="34" y="819" width="36" height="24" fill="#E8799A" clip-path="url(#sg2)"/>
+      </svg>
+    </div>
+    <div class="header-meta" id="q-counter">1 of 5</div>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-track"><div class="progress-fill" id="q-progress" style="width:20%"></div></div>
+    <div class="progress-labels"><span id="q-progress-left">Question 1</span><span id="q-progress-right">4 remaining</span></div>
+  </div>
+
+  <div class="q-body">
+    <div class="q-mode-badge weekly" id="q-badge">⚡ Weekly check-in</div>
+    <div class="q-text" id="q-text">How much did you enjoy your work this week?</div>
+    <div class="q-hint" id="q-hint">Think about the full week - not just today.</div>
+
+    <div class="rating-grid" id="rating-grid">
+      <button class="rating-btn" onclick="rate(1)">1</button>
+      <button class="rating-btn" onclick="rate(2)">2</button>
+      <button class="rating-btn" onclick="rate(3)">3</button>
+      <button class="rating-btn" onclick="rate(4)">4</button>
+      <button class="rating-btn" onclick="rate(5)">5</button>
+      <button class="rating-btn" onclick="rate(6)">6</button>
+      <button class="rating-btn" onclick="rate(7)">7</button>
+      <button class="rating-btn" onclick="rate(8)">8</button>
+      <button class="rating-btn" onclick="rate(9)">9</button>
+      <button class="rating-btn" onclick="rate(10)">10</button>
+    </div>
+    <div class="rating-labels"><span>Not at all</span><span>Completely</span></div>
+
+    <button class="next-btn disabled" id="next-btn" onclick="nextQ()">Next →</button>
+  </div>
+  <div class="safe-bottom"></div>
+</div>
+
+<!-- RESULTS SCREEN - WEEKLY -->
+<div class="screen" id="screen-results-weekly">
+  <div class="header">
+    <div class="logo-mark">
+      <svg width="40" height="13" viewBox="0 819.5 69 23" xmlns="http://www.w3.org/2000/svg">
+        <defs><clipPath id="sg3" clipPathUnits="userSpaceOnUse"><path fill-rule="evenodd" transform="matrix(.1,0,0,-.1,0,842)" d="M646.547 98.4414C643.547 38.0781 623.801 19.2539 561.828 17.9023 552.719 17.7109 543.598 17.9023 534.535 17.9023 433.449 17.7578 414.105 33.1094 394.055 129.27 386.703 164.426 394.34 180.371 429.953 190.047 473.539 203.105 519.477 206.277 564.438 199.348 645.668 185.207 650.551 181.391 646.555 98.4414H646.547ZM295.336 129.27C275.336 33.1094 255.953 17.7578 154.855 17.9023 145.785 17.9023 136.68 17.7109 127.566 17.9023 65.5664 19.2539 45.7734 38.0781 42.8438 98.4414 38.8477 181.438 43.7305 185.207 124.969 199.348 169.91 206.277 215.832 203.105 259.398 190.047 295.059 180.371 302.688 164.418 295.336 129.27ZM668.832 199.109C652.98 203.23 636.898 206.32 620.656 208.367 546.984 220.477 471.645 217.855 398.988 200.648 363.031 194.816 326.363 194.816 290.406 200.648 217.742 217.855 142.387 220.477 68.6953 208.367 52.4688 206.316 36.3945 203.227 20.5664 199.109 3.77734 194.23-6.26172 177.352 4.38672 165.539 31.8164 135.227 22.8984 96.6797 657.484 135.227 684.926 165.539 695.656 177.352 685.617 194.23 668.832 199.109Z"/></clipPath></defs>
+        <rect x="0" y="819" width="35" height="24" fill="#1B3A6B" clip-path="url(#sg3)"/>
+        <rect x="34" y="819" width="36" height="24" fill="#E8799A" clip-path="url(#sg3)"/>
+      </svg>
+    </div>
+    <div class="header-meta">Week of 2 Jun 2026</div>
+  </div>
+  <div class="results-body">
+    <div class="results-header">
+      <div class="results-emoji" id="w-emoji">👍</div>
+      <div class="results-title" id="w-title">Decent week, Sarah</div>
+      <div class="results-sub" id="w-sub">Your scores are mostly in line with your usual. One thing stands out below.</div>
+    </div>
+
+    <div class="weekly-result" id="weekly-scores">
+      <!-- populated by JS -->
+    </div>
+
+    <div class="insight-card" id="w-insight">
+      <div class="insight-label">This week's insight</div>
+      <div class="insight-text" id="w-insight-text">Your Significance score is lower than usual. Even one small action - like mapping your work to a real outcome for someone - can shift this noticeably.</div>
+    </div>
+
+    <div class="cta-card" onclick="selectMode('full'); showScreen('welcome');">
+      <div class="cta-card-title">Take the full diagnostic</div>
+      <div class="cta-card-sub">Weekly check-ins track your pulse. The full 40-question diagnostic gives you a complete picture with personalised recommendations.</div>
+      <div class="cta-arrow">→</div>
+    </div>
+
+    <div style="text-align:center;padding:16px 0 8px;font-size:12px;color:#94a3b8;">
+      Same time next week · <strong style="color:#1B3A6B;">See you then</strong>
+    </div>
+  </div>
+  <div class="safe-bottom"></div>
+</div>
+
+<!-- RESULTS SCREEN - FULL -->
+<div class="screen" id="screen-results-full">
+  <div class="header">
+    <div class="logo-mark">
+      <svg width="40" height="13" viewBox="0 819.5 69 23" xmlns="http://www.w3.org/2000/svg">
+        <defs><clipPath id="sg4" clipPathUnits="userSpaceOnUse"><path fill-rule="evenodd" transform="matrix(.1,0,0,-.1,0,842)" d="M646.547 98.4414C643.547 38.0781 623.801 19.2539 561.828 17.9023 552.719 17.7109 543.598 17.9023 534.535 17.9023 433.449 17.7578 414.105 33.1094 394.055 129.27 386.703 164.426 394.34 180.371 429.953 190.047 473.539 203.105 519.477 206.277 564.438 199.348 645.668 185.207 650.551 181.391 646.555 98.4414H646.547ZM295.336 129.27C275.336 33.1094 255.953 17.7578 154.855 17.9023 145.785 17.9023 136.68 17.7109 127.566 17.9023 65.5664 19.2539 45.7734 38.0781 42.8438 98.4414 38.8477 181.438 43.7305 185.207 124.969 199.348 169.91 206.277 215.832 203.105 259.398 190.047 295.059 180.371 302.688 164.418 295.336 129.27ZM668.832 199.109C652.98 203.23 636.898 206.32 620.656 208.367 546.984 220.477 471.645 217.855 398.988 200.648 363.031 194.816 326.363 194.816 290.406 200.648 217.742 217.855 142.387 220.477 68.6953 208.367 52.4688 206.316 36.3945 203.227 20.5664 199.109 3.77734 194.23-6.26172 177.352 4.38672 165.539 31.8164 135.227 22.8984 96.6797 657.484 135.227 684.926 165.539 695.656 177.352 685.617 194.23 668.832 199.109Z"/></clipPath></defs>
+        <rect x="0" y="819" width="35" height="24" fill="#1B3A6B" clip-path="url(#sg4)"/>
+        <rect x="34" y="819" width="36" height="24" fill="#E8799A" clip-path="url(#sg4)"/>
+      </svg>
+    </div>
+    <div class="header-meta">Full diagnostic · 2026</div>
+  </div>
+  <div class="results-body">
+    <div class="results-header">
+      <div class="results-emoji">✅</div>
+      <div class="results-title">Diagnostic complete</div>
+      <div class="results-sub">Your scores are private to you. Vantara Group only sees anonymised team averages.</div>
+    </div>
+
+    <div id="full-scores">
+      <!-- populated by JS -->
+    </div>
+
+    <div class="insight-card">
+      <div class="insight-label">Key finding</div>
+      <div class="insight-text" id="full-insight">Your Achievement and Togetherness are strong. Significance is your biggest opportunity this year - your sense of purpose and meaning at work has dropped, and that is worth addressing.</div>
+    </div>
+
+    <div class="cta-card" onclick="alert('Full report sent to your email')">
+      <div class="cta-card-title">Get your full report</div>
+      <div class="cta-card-sub">We will email a detailed breakdown with personalised recommendations based on Paul Dolan's research.</div>
+      <div class="cta-arrow">→</div>
+    </div>
+  </div>
+  <div class="safe-bottom"></div>
+</div>
+
+<script>
+// ── DATA ─────────────────────────────────────────────────────
+
+const weeklyQs = [
+  { dim: 'P', badge: '⚡ Pleasure', text: 'How much enjoyment and joy did you feel in your work yesterday?', hint: 'Think about the whole day - moments of real pleasure, not just absence of stress.' },
+  { dim: 'A', badge: '⚡ Achievement', text: 'How much did you feel you made real progress on things that mattered yesterday?', hint: 'Not just being busy - actually moving something forward that felt worthwhile.' },
+  { dim: 'S', badge: '⚡ Significance', text: 'How meaningful did your work feel yesterday - not as a judgement, but as a feeling in the moment?', hint: 'Think about specific moments. Did anything feel purposeful or, equally, pointless?' },
+  { dim: 'T', badge: '⚡ Togetherness', text: 'How lonely did you feel at work yesterday? And how connected to the people around you?', hint: 'Loneliness and connection are different things. You can feel lonely even in a busy office.' },
+  { dim: 'O', badge: '⚡ Overall', text: 'Overall, how did yesterday at work feel - on balance, was it a good day or a hard one?', hint: 'Your gut feeling. Not a judgement about performance - just how it felt.' },
+];
+
+const fullQs = [
+  { dim: 'P', badge: 'P · Pleasure', text: 'How much enjoyment did you feel in your work this week?', hint: 'Think about specific moments of real pleasure - not just absence of stress or frustration.' },
+  { dim: 'P', badge: 'P · Pleasure', text: 'How absorbed or focused did you feel in your work yesterday?', hint: 'Flow - being so engaged you lose track of time. How often did that happen?' },
+  { dim: 'P', badge: 'P · Pleasure', text: 'How calm and at ease did you feel during your work this week?', hint: 'Equanimity - a settled, grounded feeling. Different to just being happy or energised.' },
+  { dim: 'P', badge: 'P · Pleasure', text: 'How much physical or emotional pain did you experience in relation to work this week?', hint: 'Pain includes stress, anxiety, exhaustion - any experience that felt genuinely unpleasant.' },
+  { dim: 'A', badge: 'A · Achievement', text: 'How proud of your work did you feel this week?', hint: 'Not pride in the abstract - specific moments where you felt good about what you produced.' },
+  { dim: 'A', badge: 'A · Achievement', text: 'How much did you feel you learned or grew this week?', hint: 'Not just formal development - new insights, skills stretched, problems solved.' },
+  { dim: 'A', badge: 'A · Achievement', text: 'How much did you feel you made real progress on things that matter this week?', hint: 'At the end of the week - did you actually move something meaningful forward?' },
+  { dim: 'S', badge: 'S · Significance', text: 'How meaningful did your work feel yesterday - not as a judgement, but as a feeling in the moment?', hint: 'Think about specific activities. Did they feel purposeful as you were doing them?' },
+  { dim: 'S', badge: 'S · Significance', text: 'How often did your work feel pointless or futile this week?', hint: 'Honest answer. Some weeks more than others. Pointlessness is a feeling, not a verdict.' },
+  { dim: 'S', badge: 'S · Significance', text: 'How aligned with your personal values did your work feel this week?', hint: 'Not in theory - did the actual work you did this week feel right to you?' },
+  { dim: 'T', badge: 'T · Togetherness', text: 'How connected to your immediate team did you feel this week?', hint: 'Not just being around people - a real sense of mutual understanding and care.' },
+  { dim: 'T', badge: 'T · Togetherness', text: 'How lonely did you feel at work this week?', hint: 'Loneliness is distinct from being alone. You can feel lonely in a full office. Be honest.' },
+  { dim: 'T', badge: 'T · Togetherness', text: 'How safe did you feel this week to be honest about how you are really doing?', hint: 'With your manager, your team - could you actually say if something was hard?' },
+];
+
+// ── STATE ─────────────────────────────────────────────────────
+let mode = 'weekly';
+let currentQ = 0;
+let answers = [];
+let questions = [];
+
+const dimColors = { P: '#2563EB', A: '#E8799A', S: '#1B3A6B', T: '#6366f1', O: '#10b981' };
+const dimNames = { P: 'Pleasure', A: 'Achievement', S: 'Significance', T: 'Togetherness', O: 'Overall' };
+// Baseline scores for comparison (last year)
+const baseline = { P: 69, A: 76, S: 60, T: 71 };
+
+// ── WELCOME ───────────────────────────────────────────────────
+function selectMode(m) {
+  mode = m;
+  const weekly = document.getElementById('mode-weekly');
+  const full = document.getElementById('mode-full');
+  weekly.classList.toggle('selected', m === 'weekly');
+  weekly.classList.toggle('pink', m === 'weekly');
+  full.classList.toggle('selected', m === 'full');
+}
+
+function startSurvey() {
+  questions = mode === 'weekly' ? weeklyQs : fullQs;
+  answers = new Array(questions.length).fill(null);
+  currentQ = 0;
+  renderQ();
+  showScreen('question');
+}
+
+// ── QUESTION ──────────────────────────────────────────────────
+function renderQ() {
+  const q = questions[currentQ];
+  const total = questions.length;
+  const pct = Math.max(5, Math.round(((currentQ + 1) / total) * 100));
+
+  document.getElementById('q-counter').textContent = `${currentQ + 1} of ${total}`;
+  document.getElementById('q-progress').style.width = pct + '%';
+  document.getElementById('q-progress-left').textContent = `Question ${currentQ + 1}`;
+  document.getElementById('q-progress-right').textContent = `${total - currentQ - 1} remaining`;
+
+  const badge = document.getElementById('q-badge');
+  badge.textContent = q.badge;
+  badge.className = 'q-mode-badge ' + (mode === 'weekly' ? 'weekly' : q.dim);
+
+  document.getElementById('q-text').textContent = q.text;
+  document.getElementById('q-hint').textContent = q.hint;
+
+  const grid = document.getElementById('rating-grid');
+  grid.innerHTML = '';
+  for (let i = 1; i <= 10; i++) {
+    const btn = document.createElement('button');
+    btn.className = 'rating-btn' + (answers[currentQ] === i ? ` selected sel-${q.dim}` : '');
+    btn.textContent = i;
+    btn.onclick = () => rate(i);
+    grid.appendChild(btn);
+  }
+
+  const next = document.getElementById('next-btn');
+  const isLast = currentQ === total - 1;
+  next.textContent = isLast ? 'Submit ✓' : 'Next →';
+  next.className = 'next-btn ' + (answers[currentQ] !== null ? (isLast ? 'pink' : 'enabled') : 'disabled');
+}
+
+function rate(val) {
+  answers[currentQ] = val;
+  const q = questions[currentQ];
+  document.querySelectorAll('.rating-btn').forEach((b, i) => {
+    b.className = 'rating-btn' + (i + 1 === val ? ` selected sel-${q.dim}` : '');
+  });
+  const next = document.getElementById('next-btn');
+  const isLast = currentQ === questions.length - 1;
+  next.className = 'next-btn ' + (isLast ? 'pink' : 'enabled');
+}
+
+function nextQ() {
+  if (answers[currentQ] === null) return;
+  if (currentQ === questions.length - 1) {
+    showResults();
+  } else {
+    currentQ++;
+    renderQ();
+  }
+}
+
+// ── RESULTS ───────────────────────────────────────────────────
+function showResults() {
+  if (mode === 'weekly') showWeeklyResults();
+  else showFullResults();
+}
+
+function showWeeklyResults() {
+  // Score each dimension from answers
+  // weekly: [P, A, S, T, O] each 1-10 → *10
+  const dims = ['P','A','S','T'];
+  const scores = { P: answers[0]*10, A: answers[1]*10, S: answers[2]*10, T: answers[3]*10, O: answers[4]*10 };
+  const avgScore = Math.round((scores.P + scores.A + scores.S + scores.T) / 4);
+
+  // Emoji and title
+  let emoji, title, sub;
+  if (avgScore >= 75) { emoji = '🌟'; title = 'Strong week, Sarah'; sub = 'You are in a good place across the board. Keep going.'; }
+  else if (avgScore >= 60) { emoji = '👍'; title = 'Decent week, Sarah'; sub = 'Your scores are mostly in line with your usual. One thing stands out below.'; }
+  else if (avgScore >= 45) { emoji = '😐'; title = 'Tougher week than usual'; sub = 'Some dimensions dipped this week. That\'s okay - awareness is the first step.'; }
+  else { emoji = '💛'; title = 'A hard week'; sub = 'You scored lower than usual across the board. It\'s worth pausing on what\'s going on.'; }
+
+  document.getElementById('w-emoji').textContent = emoji;
+  document.getElementById('w-title').textContent = title;
+  document.getElementById('w-sub').textContent = sub;
+
+  // Find lowest
+  let lowest = dims.reduce((a, b) => scores[a] < scores[b] ? a : b);
+  const insights = {
+    P: 'Your Pleasure score is lower than usual. Even one small change to how you structure your day - protecting 90 minutes of focused time - can shift this quickly.',
+    A: 'Your Achievement score dipped this week. Try identifying one concrete thing you completed - however small - and acknowledge it.',
+    S: 'Your Significance score is lower than usual. Even one small action - like mapping your work to a real outcome for someone - can shift this noticeably.',
+    T: 'Your Togetherness score is down this week. Think about one colleague you haven\'t spoken to properly in a while. A short conversation can make a real difference.',
+  };
+  document.getElementById('w-insight-text').textContent = insights[lowest];
+
+  // Render score rows
+  const container = document.getElementById('weekly-scores');
+  container.innerHTML = '';
+  dims.forEach(d => {
+    const s = scores[d];
+    const b = baseline[d] || 65;
+    const diff = s - b;
+    const changeClass = diff > 3 ? 'trend-up' : diff < -3 ? 'trend-dn' : 'trend-nt';
+    const changeText = diff > 3 ? `↑ +${diff}` : diff < -3 ? `↓ ${diff}` : '→ Usual';
+    container.innerHTML += `
+      <div class="weekly-score-row">
+        <div class="ws-dot" style="background:${dimColors[d]};"></div>
+        <div class="ws-label">${dimNames[d]}</div>
+        <div class="ws-score" style="color:${dimColors[d]};">${s}</div>
+        <div class="ws-change ${changeClass}">${changeText}</div>
+      </div>`;
+  });
+
+  showScreen('results-weekly');
+}
+
+function showFullResults() {
+  // Average by dimension
+  const pScores = [answers[0],answers[1],answers[2]].filter(x=>x!==null).map(x=>x*10);
+  const aScores = [answers[3],answers[4],answers[5]].filter(x=>x!==null).map(x=>x*10);
+  const sScores = [answers[6],answers[7],answers[8]].filter(x=>x!==null).map(x=>x*10);
+  const tScores = [answers[9],answers[10],answers[11]].filter(x=>x!==null).map(x=>x*10);
+  const avg = arr => arr.length ? Math.round(arr.reduce((a,b)=>a+b,0)/arr.length) : 0;
+  const scores = { P: avg(pScores), A: avg(aScores), S: avg(sScores), T: avg(tScores) };
+
+  const container = document.getElementById('full-scores');
+  container.innerHTML = '';
+  ['P','A','S','T'].forEach(d => {
+    const s = scores[d];
+    const col = s >= 70 ? '#10b981' : s >= 55 ? '#f59e0b' : '#ef4444';
+    container.innerHTML += `
+      <div class="score-card">
+        <div class="score-dim">
+          <div class="score-dim-letter">${d} · ${dimNames[d].substring(0,4)}</div>
+          <div class="score-dim-name">${dimNames[d]}</div>
+        </div>
+        <div class="score-bar-wrap"><div class="score-bar-fill" style="width:${s}%;background:${dimColors[d]};"></div></div>
+        <div class="score-val" style="color:${col};">${s}</div>
+      </div>`;
+  });
+
+  const lowest = ['P','A','S','T'].reduce((a,b) => scores[a] < scores[b] ? a : b);
+  const insights = {
+    P: 'Your biggest opportunity is Pleasure. Day-to-day enjoyment and focus are lower than your other dimensions.',
+    A: 'Achievement is your focus area. Growth and progress scores suggest some friction in your current role setup.',
+    S: 'Significance is where the work is. Your sense of purpose and meaning at work has scope to grow - and it is addressable.',
+    T: 'Togetherness is your main opportunity. Relationship and belonging scores suggest the team dynamic is worth investing in.',
+  };
+  document.getElementById('full-insight').textContent = insights[lowest];
+
+  showScreen('results-full');
+}
+
+// ── SCREEN NAV ────────────────────────────────────────────────
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => {
+    s.classList.remove('active', 'slide-in');
+  });
+  const target = document.getElementById('screen-' + name);
+  target.classList.add('active', 'slide-in');
+  target.scrollTop = 0;
+}
+</script>
+</body>
+</html>
