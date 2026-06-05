@@ -763,7 +763,7 @@ nav { padding: 14px 0; flex: 1; }
 const topbarCfg = {
   home:            { label: 'Your wellbeing', title: 'Welcome back, Sarah' },
   survey:          { label: 'Annual assessment', title: '2026 Diagnostic' },
-  results:         { label: 'My scores', title: 'Your 2026 results' },
+  results:         { label: 'My scores', title: 'Your 2026 results', right: '<button class="btn-primary" onclick="window.open(\'/sarah-mitchell-report.pdf\',\'_blank\')">⬇ Download my report</button>' },
   recommendations: { label: 'Personalised for you', title: 'Recommendations' },
   resources:       { label: 'Learning', title: 'Resources from Paul Dolan' },
   history:         { label: 'Year-on-year', title: 'My history' },
@@ -779,6 +779,7 @@ function navigate(page) {
   const cfg = topbarCfg[page];
   document.getElementById('topbar-label').textContent = cfg.label;
   document.getElementById('topbar-title').textContent = cfg.title;
+  document.getElementById('topbar-right').innerHTML = cfg.right || '';
   document.getElementById('content').scrollTop = 0;
   if (page === 'survey') resetSurvey();
 }
